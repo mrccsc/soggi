@@ -29,7 +29,6 @@ Imports:
     stringr
 Collate:
     'allClasses.r'
-    'igvtrackhubs.r'
     'motifTools.R'
     'peakTransforms.r'
     'plots.R'
