@@ -1,0 +1,119 @@
+%\VignetteIndexEntry{Visualising sequencing data using tracktables}
+%\VignettePackage{tracktables}
+%\VignetteEngine{knitr::knitr}
+
+% To compile this document
+% library('knitr'); rm(list=ls()); knit('tracktables.Rnw')
+
+\documentclass[12pt]{article}
+
+
+<<knitr, echo=FALSE, results="hide">>=
+library("knitr")
+opts_chunk$set(tidy=FALSE,dev="png",fig.show="hide",
+               fig.width=4,fig.height=4.5,
+               message=FALSE)
+@ 
+
+<<style, eval=TRUE, echo=FALSE, results="asis">>=
+BiocStyle::latex()
+@
+
+<<loadDESeq2, echo=FALSE>>=
+library("tracktables")
+@
+
+
+\author{Thomas Carroll$^{1*}$\\[1em] \small{$^{1}$ Bioinformatics Facility, MRC Clincal Sciences Centre;} \\ \small{\texttt{$^*$thomas.carroll (at)imperial.ac.uk}}}
+
+\title{Visualising ChIP-seq data -- tracktables}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+ 
+ tracktables provides a set of tools to organise visualise your ChIP-seq data.
+  \vspace{1em}
+  
+  \end{abstract}
+
+<<options, results="hide", echo=FALSE>>=
+options(digits=3, width=80, prompt=" ", continue=" ")
+@
+
+\newpage
+
+\tableofcontents
+
+\section{Standard workflow}
+
+\subsection{Quick start}
+
+Tracktables has two main sets of functions to assist in rapid visualisation of genomics data. 
+
+The first set of functions deal with creating IGV sessions XMLs, sample information files and HTML tables allowing for dynamic updating of IGV.
+
+In this quick start we will look at building a simple HTML page of a ChIP-seq IGV session.
+
+<<quick1, eval=FALSE>>=
+library(tracktables)
+SampleSheet <- cbind(
+  c("Pu1","Myc","Ik_prePro","Ik_pro"),
+  c("ProB","ProB","PreProB","ProB"),
+  c("Pu1","Myc","Ik","Ik")
+)
+colnames(SampleSheet) <- c("SampleName",'Tissue',"Factor")
+fileSheet <- cbind(
+  c("Pu1","Myc","Ik_prePro","Ik_pro"),
+  c(NA,NA,NA,NA),
+  c("/Users/tcarroll/Downloads/randomTracks-2/Pu1DupMarkedNormalised.bw",
+    "/Users/tcarroll/Downloads/randomTracks-2/MycDupMarkedNormalised.bw",
+    "/Users/tcarroll/Downloads/randomTracks-2/Ikaros_2_preproBDupMarkedNormalised.bw",
+    "/Users/tcarroll/Downloads/randomTracks-2/Ikaros_1_proBDupMarkedNormalised.bw"),
+  c("/Users/tcarroll/Downloads/randomTracks/Pu1_WithInput_Input_2_proB_peaks.bed",
+    "/Users/tcarroll/Downloads/randomTracks/Myc_WithInput_Input_Ch12_peaks.bed",
+    "/Users/tcarroll/Downloads/randomTracks/Ikaros_2_preproB_WithInput_Input_2_proB_peaks.bed",
+    "/Users/tcarroll/Downloads/randomTracks/Ikaros_1_proB_WithInput_Input_2_proB_peaks.bed")
+)
+colnames(fileSheet) <- c("SampleName","bam","bigwig","interval")
+
+
+@
+
+<<quick2, eval=TRUE>>=
+library(tracktables)
+SampleSheet <- cbind(
+  c("Pu1","Myc","Ik_prePro","Ik_pro"),
+  c("ProB","ProB","PreProB","ProB"),
+  c("Pu1","Myc","Ik","Ik")
+)
+colnames(SampleSheet) <- c("SampleName",'Tissue',"Factor")
+fileSheet <- cbind(
+  c("Pu1","Myc","Ik_prePro","Ik_pro"),
+  c(NA,NA,NA,NA),
+  c("/Users/tcarroll/Downloads/randomTracks-2/Pu1DupMarkedNormalised.bw",
+    "/Users/tcarroll/Downloads/randomTracks-2/MycDupMarkedNormalised.bw",
+    "/Users/tcarroll/Downloads/randomTracks-2/Ikaros_2_preproBDupMarkedNormalised.bw",
+    "/Users/tcarroll/Downloads/randomTracks-2/Ikaros_1_proBDupMarkedNormalised.bw"),
+  c("/Users/tcarroll/Downloads/randomTracks/Pu1_WithInput_Input_2_proB_peaks.bed",
+    "/Users/tcarroll/Downloads/randomTracks/Myc_WithInput_Input_Ch12_peaks.bed",
+    "/Users/tcarroll/Downloads/randomTracks/Ikaros_2_preproB_WithInput_Input_2_proB_peaks.bed",
+    "/Users/tcarroll/Downloads/randomTracks/Ikaros_1_proB_WithInput_Input_2_proB_peaks.bed")
+)
+colnames(fileSheet) <- c("SampleName","bam","bigwig","interval")
+
+
+@
+
+The first set of functions are for summarising and visualising coverage of genomic regions across samples and gene/genomic-interval sets.
+The regionPlot function calculates normalised coverage across or over user specified regions to produce \Rclass{ChIPprofile} object.
+
+<<quick4, eval=FALSE>>=
+print("Coming Soon!")
+@
+
+\bibliography{library}
+
+\end{document}

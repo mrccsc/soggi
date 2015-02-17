@@ -1,0 +1,38 @@
+Package: sogi
+Type: Package
+Title: Build IGV tracks and HTML reports
+Version: 1.0.1
+Date: 2014-06-01
+Author: Wei Liu, Anne Pajon, Tom Carroll
+Maintainer: Tom Carroll <tc.infomatics@gmail.com>
+Description: Methods to create complex IGV genome browser sessions and dynamic
+    IGV reports using Datatables Javascript libraries. Additional functions to
+    identify, score and export Ultra High Artefact Regions. Functions to
+    summarise and visualise coverage across points or variable sized regions
+    for single/end seqeuncing.
+biocViews: Sequencing, ChIPSeq, QualityControl, ReportWriting
+License: GPL (>= 3)
+LazyLoad: yes
+Depends:
+    R (>= 3.0.0),BiocGenerics
+Imports:
+    IRanges,
+    ggplot2,
+    QuasR,
+    rtracklayer,
+    GenomicAlignments,
+    GenomicRanges,
+    XVector,
+    Rsamtools,
+    reshape2,
+    Biostrings,
+    XML,
+    tractor.base,
+    stringr
+Collate:
+    'allClasses.r'
+    'igvtrackhubs.r'
+    'motifTools.R'
+    'peakTransforms.r'
+    'plots.R'
+    'tracktables.R'
