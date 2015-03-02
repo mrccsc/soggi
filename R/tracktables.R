@@ -26,19 +26,20 @@
 #' @param format BAM or BigWig
 #' @param seqlengths Chromosomes to be used. If missing will report all.
 #' @param forceFragment Centre fragment and force consistent fragment width.
+#' @param downSample Down sample GRanges or bamFile to this proportion of orginal.
 #' @return ChIPprofile A ChIPprofile object. 
 #' @export
 #' @import IRanges GenomicRanges ggplot2 QuasR rtracklayer GenomicAlignments GenomicRanges XVector Rsamtools reshape2 Biostrings tractor.base stringr XML
 #' @include allClasses.r plots.R peakTransforms.r
-regionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,verbose=T,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80){
+regionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,verbose=T,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80,downSample=NULL){
   if(!verbose){
     suppressMessages(runRegionPlot())
   }
-  result <- runRegionPlot(bamFile,testRanges,nOfWindows,FragmentLength,style,distanceAround,distanceInRegionStart,distanceOutRegionStart,distanceInRegionEnd,distanceOutRegionEnd,paired,normalize,plotBy,removeDup,format,seqlengths,forceFragment,method,genome,cutoff)
+  result <- runRegionPlot(bamFile,testRanges,nOfWindows,FragmentLength,style,distanceAround,distanceInRegionStart,distanceOutRegionStart,distanceInRegionEnd,distanceOutRegionEnd,paired,normalize,plotBy,removeDup,format,seqlengths,forceFragment,method,genome,cutoff,downSample)
   return(result)  
 }
 
-runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80){
+runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80,downSample=NULL){
 
   #bamFile <- "/home//pgellert/Dropbox (Lymphocyte_Developme)/WeiWeiLiang/RNAPII/Sample_R1-0hDupMarked.bam"
   #bamFile <-"Downloads//mergedETOH.bwRange5.bw"
@@ -241,7 +242,25 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
       message("..done")
     }  
     message("Calculating coverage..",appendLF=FALSE)
+    
+    ## Modified here
+    print(lengths)
+    print(names(seqlengths(temp)))
+    seqlengths(temp)[match(names(lengths),names(seqlengths(temp)))] <- lengths
+    if(!is.null(downSample)){
+        if(downSample < 1 & downSample > 0){
+          temp <- temp[sample(length(temp),round(length(temp))*downSample),]
+        }else if(downSample > 1){
+          temp <- temp[sample(length(temp),downSample),]
+        } 
+    }
+    print(length(temp))
     genomeCov <- coverage(temp)
+    print(seqlengths(temp))
+    print(seqlengths(genomeCov))
+    lengths <- seqlengths(genomeCov)
+    allchrs <- names(lengths)
+    print("Wowser")
     message("..done")
   }
   chromosomes <- seqlevels(genomeCov) 

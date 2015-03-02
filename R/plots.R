@@ -16,15 +16,22 @@
 #' @param object A ChIPprofile object 
 #' @param gts A list of character vectors and GRanges
 #' @param plotregion region to plot
-plotRegion.ChIPprofile <- function(object,gts=NULL,plotregion="full")
+#' @param outliers A numeric vector of length 1 containing proportion to exclude from limits 
+plotRegion.ChIPprofile <- function(object,gts=NULL,plotregion="full",outliers=NULL)
 {
   #app <- lapply(gsets,function(x){colMeans(assays(object)[[1]][rowData(object)$name %in% x,])})
+  nOfWindows <- object@params$nOfWindows
   if(!is.null(gts)){
     profileList <- list()
     for(p in 1:length(assays(object))){
       profileTemp <- assays(object)[[p]]
-      profileTempList <- lapply(gts,function(x)colMeans(profileTemp[rowData(object)$name %in% x,])) 
-      
+      if(!is.null(outliers)){
+        profileTempList <- lapply(gts,function(x)
+          colMeans(winsorizeMatrix(profileTemp[rowData(object)$name %in% x,],outliers,1-outliers))
+          )         
+      }else{
+        profileTempList <- lapply(gts,function(x)colMeans(profileTemp[rowData(object)$name %in% x,])) 
+      }
       profileMatTemp <- melt(as.data.frame(do.call(cbind,profileTempList)))
       if(object@params$style=="region" & plotregion=="full"){
         axisIndex=c(seq(1,(object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)),
@@ -45,7 +52,13 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,plotregion="full")
     meltedProfileFrame <- do.call(rbind,profileList)
     colnames(meltedProfileFrame) <- c("xIndex","Group","Sample","Score")
   }else{
-    profileList <- lapply(c(assays(object)),colMeans)
+    if(!is.null(outliers)){
+      profileList <- lapply(c(assays(object)),function(x)
+        colMeans(winsorizeMatrix(x,outliers,1-outliers))
+      )         
+    }else{    
+      profileList <- lapply(c(assays(object)),colMeans)
+    }
     profileFrame <- do.call(cbind,profileList)
     colnames(profileFrame) <- basename(unlist(exptData(object)["names"]))
     if(object@params$style=="region"){    
@@ -58,7 +71,7 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,plotregion="full")
       axisIndex=c(seq(1,(object@params$distanceAround+object@params$distanceAround+1)))
     }
     if(object@params$style=="percentOfRegion"){
-      axisIndex=c(seq(1,((nOfWindows*((object@params$distanceAround)/100))*2)+nOfWindows))
+      axisIndex=c(seq(1,((object@params$nOfWindows*((object@params$distanceAround)/100))*2)+object@params$nOfWindows))
     }     
     rownames(profileFrame) <- axisIndex
     meltedProfileFrame <- melt(profileFrame)
@@ -123,7 +136,16 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,plotregion="full")
   return(P)
 }
 
-setGeneric("plotRegion", function(object="ChIPprofile",gts=NULL,plotregion="character") standardGeneric("plotRegion"))
+winsorizeMatrix <- function(mat,limitlow,limithigh){
+  apply(mat,2,function(x)winsorizeVector(x,limitlow,limithigh))
+}
+winsorizeVector <- function(vect,limitlow,limithigh){
+  qs <- quantile(vect,c(limitlow,limithigh))
+  vect[vect < qs[1]] <- qs[1]  
+  vect[vect > qs[2]] <- qs[2]  
+  vect
+}
+setGeneric("plotRegion", function(object="ChIPprofile",gts=NULL,plotregion="character",outliers=NULL) standardGeneric("plotRegion"))
 
 #' @rdname plotRegion
 #' @export
