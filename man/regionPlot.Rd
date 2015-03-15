@@ -3,18 +3,22 @@
 \alias{regionPlot}
 \title{Plot coverage of points or regions.}
 \usage{
-regionPlot(bamFile, testRanges, nOfWindows = 100, FragmentLength = 150,
-  style = "point", distanceAround = 1500, distanceInRegionStart = 1500,
+regionPlot(bamFile, testRanges, samplename = NULL, nOfWindows = 100,
+  FragmentLength = 150, style = "point", distanceAround = 1500,
+  distanceUp = 1500, distanceDown = 1500, distanceInRegionStart = 1500,
   distanceOutRegionStart = 1500, distanceInRegionEnd = 1500,
   distanceOutRegionEnd = 1500, paired = F, normalize = "RPM",
   plotBy = "coverage", removeDup = F, verbose = T, format = "bam",
   seqlengths = NULL, forceFragment = NULL, method = "bin",
-  genome = NULL, cutoff = 80)
+  genome = NULL, cutoff = 80, downSample = NULL,
+  minFragmentLength = NULL, maxFragmentLength = NULL)
 }
 \arguments{
 \item{bamFile}{Character vector for location of BAM file.}
 
 \item{testRanges}{GRanges object of regions to plot.}
+
+\item{samplename}{Character vector of sample name. Default is NULL.}
 
 \item{nOfWindows}{Number of windows to bin regions into for coverage calculations (Default 100)}
 
@@ -23,6 +27,10 @@ regionPlot(bamFile, testRanges, nOfWindows = 100, FragmentLength = 150,
 \item{style}{Point or region (see details)}
 
 \item{distanceAround}{Distance around centre of region to be used for plotting}
+
+\item{distanceUp}{Distance upstream from centre of region to be used for plotting}
+
+\item{distanceDown}{Distance downstream from centre of region to be used for plotting}
 
 \item{distanceInRegionStart}{Distance into region start
 (5' for Watson/positive strand or notspecified strand Regions,3' for Crick/negatie strand regions)
@@ -55,6 +63,21 @@ for plotting.}
 \item{seqlengths}{Chromosomes to be used. If missing will report all.}
 
 \item{forceFragment}{Centre fragment and force consistent fragment width.}
+
+\item{method}{Character vector of value "bp","bin" or "spline".
+The bin method divides a region of interest into equal sized bins of number specified in nOfWindows.
+Coverage or counts are then summarised within these windows.
+The spline method creates a spline with the number of spline points as specified in nOfWindows argument.}
+
+\item{downSample}{Down sample GRanges or bamFile to this proportion of orginal.}
+
+\item{genome}{BSGenome object to be used when using PWM input.}
+
+\item{cutoff}{Cut-off for idnetifying motifs when using PWM input.}
+
+\item{minFragmentLength}{Remove fragments smaller than this.}
+
+\item{maxFragmentLength}{Remove fragments larger than this.}
 }
 \value{
 ChIPprofile A ChIPprofile object.

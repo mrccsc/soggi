@@ -9,7 +9,7 @@
 \S4method{plotRegion}{ChIPprofile}(object)
 
 \S4method{plotRegion}{ChIPprofile}(object = "ChIPprofile", gts = NULL,
-  plotregion = "full")
+  plotregion = "full", outliers = NULL)
 }
 \arguments{
 \item{object}{A ChIPprofile object}
@@ -17,6 +17,8 @@
 \item{gts}{A list of character vectors and GRanges}
 
 \item{plotregion}{region to plot}
+
+\item{outliers}{A numeric vector of length 1 containing proportion to exclude from limits}
 }
 \description{
 A function to plot regions
