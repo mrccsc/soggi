@@ -6,6 +6,8 @@
 #' @param FragmentLength Integer vector Predicted or expected fragment length.
 #' @param style Point or region (see details)
 #' @param distanceAround Distance around centre of region to be used for plotting
+#' @param distanceUp Distance upstream from centre of region to be used for plotting
+#' @param distanceDown Distance downstream from centre of region to be used for plotting
 #' @param distanceInRegionStart Distance into region start 
 #' (5' for Watson/positive strand or notspecified strand Regions,3' for Crick/negatie strand regions) 
 #' for plotting.
@@ -26,20 +28,28 @@
 #' @param format BAM or BigWig
 #' @param seqlengths Chromosomes to be used. If missing will report all.
 #' @param forceFragment Centre fragment and force consistent fragment width.
+#' @param method Character vector of value "bp","bin" or "spline". 
+#' The bin method divides a region of interest into equal sized bins of number specified in nOfWindows.
+#' Coverage or counts are then summarised within these windows.
+#' The spline method creates a spline with the number of spline points as specified in nOfWindows argument.
 #' @param downSample Down sample GRanges or bamFile to this proportion of orginal.
+#' @param genome BSGenome object to be used when using PWM input.
+#' @param cutoff Cut-off for idnetifying motifs when using PWM input.
+#' @param minFragmentLength Remove fragments smaller than this.
+#' @param maxFragmentLength Remove fragments larger than this. 
 #' @return ChIPprofile A ChIPprofile object. 
 #' @export
 #' @import IRanges GenomicRanges ggplot2 QuasR rtracklayer GenomicAlignments GenomicRanges XVector Rsamtools reshape2 Biostrings tractor.base stringr XML
 #' @include allClasses.r plots.R peakTransforms.r
-regionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,verbose=T,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80,downSample=NULL){
+regionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceUp=1500,distanceDown=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,verbose=T,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80,downSample=NULL,minFragmentLength=NULL,maxFragmentLength=NULL){
   if(!verbose){
     suppressMessages(runRegionPlot())
   }
-  result <- runRegionPlot(bamFile,testRanges,nOfWindows,FragmentLength,style,distanceAround,distanceInRegionStart,distanceOutRegionStart,distanceInRegionEnd,distanceOutRegionEnd,paired,normalize,plotBy,removeDup,format,seqlengths,forceFragment,method,genome,cutoff,downSample)
+  result <- runRegionPlot(bamFile,testRanges,nOfWindows,FragmentLength,style,distanceAround,distanceUp,distanceDown,distanceInRegionStart,distanceOutRegionStart,distanceInRegionEnd,distanceOutRegionEnd,paired,normalize,plotBy,removeDup,format,seqlengths,forceFragment,method,genome,cutoff,downSample)
   return(result)  
 }
 
-runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80,downSample=NULL){
+runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceUp=1500,distanceDown=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80,downSample=NULL,minFragmentLength=NULL,maxFragmentLength=NULL){
 
   #bamFile <- "/home//pgellert/Dropbox (Lymphocyte_Developme)/WeiWeiLiang/RNAPII/Sample_R1-0hDupMarked.bam"
   #bamFile <-"Downloads//mergedETOH.bwRange5.bw"
@@ -61,7 +71,12 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
   #format="bigwig"
   #seqlengths=NULL
   
+  ## Check parameters
+  
+  
+  
   ## Initialize empty matricies and paramaters for collecting coverage analysis
+  ## Find maximum distance to use for filtering out of bounds extended GRanges
   if(style == "region" | style=="regionandpoint"){
     posRegionStartMat <- NULL
     posRegionEndMat <- NULL
@@ -79,8 +94,8 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     NegRegionMat <- NULL
     RegionsMat <- NULL    
     maxDistance=distanceAround
-    distanceUpStart <- distanceAround
-    distanceDownEnd <- distanceAround    
+    distanceUpStart <- distanceUp
+    distanceDownEnd <- distanceDown    
   }
   
   if(style == "percentOfRegion"){
@@ -90,6 +105,9 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     distanceDownEnd <- NULL    
   }
   
+  
+  ## If format is bam, read header and get contig information
+  
   if(format == "bam"){
     ## Get all chromosomes in bamFile
     message("Reading Bam header information...",appendLF = FALSE)
@@ -98,6 +116,11 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     names(lengths) <- allchrs
     message("..Done")
   }
+  
+  ## For remaining formats import data and find contig information
+  
+  # Import bigwig.
+  
   if(format=="bigwig"){
     message("Importing BigWig...",appendLF = FALSE)
     genomeCov <- import.bw(bamFile,as = "RleList")
@@ -110,10 +133,23 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     allchrs <- names(lengths)
     message("..Done")
   }
-  if(format=="PWM"){
+  
+  # If format is pwm PWM, calculate motifs on forward and reverse strand.
+  
+  if(format=="pwm"){
     bamFile <- pwmToCoverage(bamFile,genome,min=cutoff,removeRand=FALSE)
     format <- "rlelist"   
   }
+  
+  # If format is granges, simply covert to coverage (This would work for GenomicInterval or GenomicAlignments)
+  
+  if(format=="granges"){
+    genomeCov <- coverage(bamFile)
+    format <- "rlelist"   
+  }  
+  
+  # If format is rlelist, import rle and set widths/contigs by seqlengths.
+  
   if(format=="rlelist"){
     message("Importing rlelist",appendLF = FALSE)
     genomeCov <- bamFile
@@ -126,6 +162,8 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     allchrs <- names(lengths)
     message("..Done")
   }
+  
+  # Exclude and count regions which when extended are outside contig boundaries.
   
   if(style != "percentOfRegion"){
     ## Filter testRanges to those contained within chromosomes.
@@ -159,6 +197,10 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
   message("..Done")
   message("Filtered ",length(testRanges)-length(temptestranges)," of ",length(testRanges)," regions")
   testRanges <- temptestranges
+  temptestranges <- NULL
+  
+  # Split ranges into +/- strand. Regions with no strand information are assigned to + strand
+  
   message("Splitting regions by Watson and Crick strand..",appendLF = FALSE)
   elementMetadata(testRanges) <- cbind(elementMetadata(testRanges),data.frame(giID = paste0("giID",seq(1,length(testRanges)))))
   strand(testRanges[strand(testRanges) == "*"]) <- "+"
@@ -239,6 +281,12 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
         temp <- resize(temp,forceFragment,"center")
         message("..done")        
       }
+      if(!is.null(minFragmentLength)){
+        temp <- temp[width(temp) > minFragmentLength]
+      }
+      if(!is.null(maxFragmentLength)){
+        temp <- temp[width(temp) < maxFragmentLength]
+      }   
       message("..done")
     }  
     message("Calculating coverage..",appendLF=FALSE)
