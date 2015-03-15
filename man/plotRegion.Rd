@@ -6,9 +6,10 @@
 \alias{plotRegion.ChIPprofile}
 \title{Plot regions}
 \usage{
-\S4method{plotRegion}{ChIPprofile}(object)
+\S4method{plotRegion}{ChIPprofile}(object,gts,summariseBy,colourBy,lineBy,groupBy,plotregion,outliers)
 
 \S4method{plotRegion}{ChIPprofile}(object = "ChIPprofile", gts = NULL,
+  summariseBy = NULL, colourBy = NULL, lineBy = NULL, groupBy = NULL,
   plotregion = "full", outliers = NULL)
 }
 \arguments{
@@ -17,6 +18,20 @@
 \item{gts}{A list of character vectors and GRanges}
 
 \item{plotregion}{region to plot}
+
+\item{summariseBy}{Column names from GRanges elementmetadata. Formula or character vector of column names to use
+to collapse genomic ranges to summarised profiles.
+summariseBy can not be used injustion with groups specified by gts argument.}
+
+\item{colourBy}{Character vector or formula of either column names from colData(object) containing
+sample metadata Character vector or formula of either column names from colData(object) containing
+sample metadata or character vector "group" to colour by groups in gts}
+
+\item{lineBy}{Character vector or formula of either column names from colData(object) containing
+sample metadata or character vector "group" to set line type by groups in gts}
+
+\item{groupBy}{Character vector or formula of either column names from colData(object) containing
+sample metadata or character "group" to colour by groups in gts}
 
 \item{outliers}{A numeric vector of length 1 containing proportion to exclude from limits}
 }

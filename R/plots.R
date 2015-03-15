@@ -3,7 +3,7 @@
 #' A function to plot regions
 #' 
 #' @usage
-#' \S4method{plotRegion}{ChIPprofile}(object)
+#' \S4method{plotRegion}{ChIPprofile}(object,gts,summariseBy,colourBy,lineBy,groupBy,plotregion,outliers)
 #'
 #'
 #' @docType methods
@@ -16,8 +16,18 @@
 #' @param object A ChIPprofile object 
 #' @param gts A list of character vectors and GRanges
 #' @param plotregion region to plot
+#' @param summariseBy Column names from GRanges elementmetadata. Formula or character vector of column names to use
+#' to collapse genomic ranges to summarised profiles.
+#' summariseBy can not be used injustion with groups specified by gts argument.
+#' @param colourBy Character vector or formula of either column names from colData(object) containing
+#' sample metadata Character vector or formula of either column names from colData(object) containing
+#' sample metadata or character vector "group" to colour by groups in gts
+#' @param lineBy Character vector or formula of either column names from colData(object) containing
+#' sample metadata or character vector "group" to set line type by groups in gts
+#' @param groupBy Character vector or formula of either column names from colData(object) containing
+#' sample metadata or character "group" to colour by groups in gts
 #' @param outliers A numeric vector of length 1 containing proportion to exclude from limits 
-plotRegion.ChIPprofile <- function(object,gts=NULL,plotregion="full",outliers=NULL)
+plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NULL,lineBy=NULL,groupBy=NULL,plotregion="full",outliers=NULL)
 {
   #app <- lapply(gsets,function(x){colMeans(assays(object)[[1]][rowData(object)$name %in% x,])})
   nOfWindows <- object@params$nOfWindows
@@ -145,7 +155,7 @@ winsorizeVector <- function(vect,limitlow,limithigh){
   vect[vect > qs[2]] <- qs[2]  
   vect
 }
-setGeneric("plotRegion", function(object="ChIPprofile",gts=NULL,plotregion="character",outliers=NULL) standardGeneric("plotRegion"))
+setGeneric("plotRegion", function(object="ChIPprofile",gts=NULL,summariseBy=NULL,colourBy=NULL,lineBy=NULL,groupBy=NULL,plotregion="character",outliers=NULL) standardGeneric("plotRegion"))
 
 #' @rdname plotRegion
 #' @export
