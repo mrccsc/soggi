@@ -327,6 +327,7 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
   chromosomes <- seqlevels(genomeCov) 
   
   
+  #
   
   if(style=="point"){
     testRangesPos <- resize(testRangesPos,1,"center")
