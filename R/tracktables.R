@@ -200,7 +200,7 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
   temptestranges <- NULL
   
   # Split ranges into +/- strand. Regions with no strand information are assigned to + strand
-  
+    
   message("Splitting regions by Watson and Crick strand..",appendLF = FALSE)
   elementMetadata(testRanges) <- cbind(elementMetadata(testRanges),data.frame(giID = paste0("giID",seq(1,length(testRanges)))))
   strand(testRanges[strand(testRanges) == "*"]) <- "+"
@@ -212,13 +212,15 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     distanceDownEndPos <- distanceUpStartPos    
     distanceUpStartNeg <- distanceUpStart[as.vector(strand(testRanges) == "-")]
     distanceDownEndNeg <- distanceUpStartNeg
+    message("..Done")
   }else{
     distanceUpStartPos <- distanceUpStart 
     distanceDownEndPos <- distanceDownEnd    
     distanceUpStartNeg <- distanceUpStart
     distanceDownEndNeg <- distanceDownEnd    
+    message("..Done")
   }
-  message("..Done")
+
   if(style=="region"){
     message("Filtering regions which are smaller than windows into region...",appendLF = FALSE)
     ## Split Regions into those on positive and negative strands..
@@ -231,14 +233,17 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
   message("Found ",length(testRangesNeg)," Crick strand regions")
   
   
-  ## Extend regions and get positive versus negative reads.
+  ## Extend regions and get positive versus negative regions
   message("Extending regions..",appendLF=FALSE)    
   exttestRanges <- c(GRanges(seqnames(testRangesPos),IRanges(start(testRangesPos)-distanceUpStartPos,end(testRangesPos)+distanceDownEndPos)),
                      GRanges(seqnames(testRangesNeg),IRanges(start(testRangesNeg)-distanceDownEndNeg,end(testRangesNeg)+distanceUpStartNeg))
   )
   message("...done")   
   
+  ## Create GRanges to be used in scanBamParam while reading in Bamfile regions.
   reducedExtTestRanges <- reduce(exttestRanges)
+
+  ## Set up scanBanParam for reading in bam file.
   
   if(!removeDup){
     Param <- ScanBamParam(which=GRanges(seqnames=seqnames(reducedExtTestRanges[seqnames(reducedExtTestRanges) %in% allchrs]),IRanges(start=start(reducedExtTestRanges[seqnames(reducedExtTestRanges) %in% allchrs]),end=end(reducedExtTestRanges[seqnames(reducedExtTestRanges) %in% allchrs]))))
@@ -246,20 +251,32 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
     Param <- ScanBamParam(flag=scanBamFlag(isDuplicate=FALSE),which=GRanges(seqnames=seqnames(reducedExtTestRanges[seqnames(reducedExtTestRanges) %in% allchrs]),IRanges(start=start(reducedExtTestRanges[seqnames(reducedExtTestRanges) %in% allchrs]),end=end(reducedExtTestRanges[seqnames(reducedExtTestRanges) %in% allchrs]))))
   }
   
+  ## if format is bam read in bamfile.
   if(format == "bam"){
     message("Reading tags from ",bamFile,appendLF=FALSE)
     totalReads <- alignmentStats(bamFile)[,"mapped"]
+    
+  ##  if data is single end reads then import reads and reset reads to fragment length.
+  ##  Calculate fragment length from cross-coverage if not provided
+  
     if(paired==FALSE){
       total <- readGAlignmentsFromBam(bamFile,param=Param)
       message("..Done.\nRead in ",length(total)," reads")
+      
+      if(is.null(FragmentLength)){
+        FragmentLength <- getShifts(total,lengths,shiftWindowStart=1,shiftWindowEnd=400)
+      }
+      
       message("Extending reads to fragmentlength of ",FragmentLength,appendLF=F)
       temp <- resize(as(total,"GRanges"),FragmentLength,"start")
       message("..done")
     }
+
+    ##  if data is paired end reads then import reads.
+    ##  Reset fragment size and/or filter to fragment length range is specified.
+  
     if(paired==TRUE){
-      #bamFile <- BamFile(bamFile,yieldSize=50000000L)
-      #tempPaired <- readGAlignmentPairsFromBam(bamFile,param=Param)
-      #tempPaired <- tempPaired[isProperPair(tempPaired)]
+      
       gaPaired <- readGAlignmentsFromBam(bamFile, 
                                          param=ScanBamParam(what=c("mpos"),
                                                             flag=scanBamFlag(isProperPair = TRUE,isFirstMateRead = TRUE)))      
@@ -288,12 +305,11 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
         temp <- temp[width(temp) < maxFragmentLength]
       }   
       message("..done")
-    }  
+    }
+  
+    ## Downsample single or paired end reads if specified and create coverage rlelist
     message("Calculating coverage..",appendLF=FALSE)
     
-    ## Modified here
-    print(lengths)
-    print(names(seqlengths(temp)))
     seqlengths(temp)[match(names(lengths),names(seqlengths(temp)))] <- lengths
     if(!is.null(downSample)){
         if(downSample < 1 & downSample > 0){
@@ -302,16 +318,15 @@ runRegionPlot <- function(bamFile,testRanges,nOfWindows=100,FragmentLength=150,s
           temp <- temp[sample(length(temp),downSample),]
         } 
     }
-    print(length(temp))
+
     genomeCov <- coverage(temp)
-    print(seqlengths(temp))
-    print(seqlengths(genomeCov))
     lengths <- seqlengths(genomeCov)
     allchrs <- names(lengths)
-    print("Wowser")
     message("..done")
   }
   chromosomes <- seqlevels(genomeCov) 
+  
+  
   
   if(style=="point"){
     testRangesPos <- resize(testRangesPos,1,"center")
