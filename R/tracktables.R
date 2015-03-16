@@ -846,7 +846,7 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
 
     extraForWindows <- grWidths%%nOfWindows
     addToWindow <- 0
-    startPos <- start(testRangesNeg)#-(windows/2)
+    startNeg <- start(testRangesNeg)#-(windows/2)
     rem <- rep(0,length(extraForWindows))
     rem2 <- NULL
     message("Windowing negative regions ")

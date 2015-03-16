@@ -9,7 +9,7 @@ setClass("ChIPprofile",contains = "SummarizedExperiment",
 #' A Merge two ChIPprofiles into 1 combined ChIPprofile
 #' 
 #' @usage
-#' \S4method{mergeChIPprofiles}{ChIPprofile,ChIPprofile}(ChIPprofile)
+#' \S4method{mergeChIPprofiles}{ChIPprofile}(x,y)
 #'
 #' @docType methods
 #' @name mergeChIPprofiles
@@ -21,7 +21,7 @@ setClass("ChIPprofile",contains = "SummarizedExperiment",
 #' @export
 #' @param x A ChIPprofile object 
 #' @param y A ChIPprofile object
-mergeChIPprofiles <- function(x,y){
+mergeChIPprofiles.ChIPprofile <- function(x,y){
   #t1 <- rowData(x)
   selfOverlapst1 <- table(as.matrix(findOverlaps(x,x,type="equal"))[,2])
   filtDupt1 <- as.numeric(names(selfOverlapst1[
@@ -65,4 +65,8 @@ mergeChIPprofiles <- function(x,y){
 }
 
 setGeneric("mergeChIPprofiles", function(x="ChIPprofile",y="ChIPprofile") standardGeneric("mergeChIPprofiles"))
+
+#' @rdname mergeChIPprofiles
+#' @export
+setMethod("mergeChIPprofiles", signature(x="ChIPprofile",y="ChIPprofile"), mergeChIPprofiles.ChIPprofile)
 

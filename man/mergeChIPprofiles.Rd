@@ -2,10 +2,15 @@
 \docType{methods}
 \name{mergeChIPprofiles}
 \alias{mergeChIPprofiles}
+\alias{mergeChIPprofiles,ChIPprofile,ChIPprofile-method}
 \alias{mergeChIPprofiles,ChIPprofile-method}
+\alias{mergeChIPprofiles.ChIPprofile}
 \title{Merge ChIPprofile objects}
 \usage{
-\S4method{mergeChIPprofiles}{ChIPprofile,ChIPprofile}(ChIPprofile)
+\S4method{mergeChIPprofiles}{ChIPprofile}(x,y)
+
+\S4method{mergeChIPprofiles}{ChIPprofile,ChIPprofile}(x = "ChIPprofile",
+  y = "ChIPprofile")
 }
 \arguments{
 \item{x}{A ChIPprofile object}

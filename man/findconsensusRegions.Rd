@@ -11,7 +11,7 @@ findconsensusRegions(testRanges, bamFiles = NULL, method = "majority",
 \arguments{
 \item{testRanges}{Named character vector of region locations}
 
-\item{bamFile}{Named character vector of bamFile locations}
+\item{bamFiles}{Named character vector of bamFile locations}
 
 \item{method}{Method to select reproducible summits to merge.}
 

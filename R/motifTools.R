@@ -126,6 +126,8 @@ motifCov <- function(genome,regions,pwm,chrOfInterest,atCentre=FALSE){
 #' @param extend bps to extend regions by
 #' @param removeRand Remove contigs with rand string
 #' @param strandScore Method for averaging strand. Options are max, mean, sum, bothstrands
+#' @param atCentre TRUE/FALSE. TRUE assigns score onto 1bp position at centre of motif.
+#' FALSE assigns every basepair the sum of scores of all overlapping motifs.  
 #' @export
 makeMotifScoreRle <- function(pwm,regions,genome,extend,removeRand=FALSE,strandScore="mean",atCentre=FALSE){
   regions <- GRanges(seqnames(regions),IRanges(start(regions)-extend,end(regions)+extend),strand=strand(regions),elementMetadata(regions))

@@ -29,6 +29,19 @@
 #' @param outliers A numeric vector of length 1 containing proportion to exclude from limits 
 plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NULL,lineBy=NULL,groupBy=NULL,plotregion="full",outliers=NULL)
 {
+  
+## This function can work using two main grouping logics
+## When gts is supplied, groupBy, colourBy, lineBy work only with columns
+## from the sample metadata found in colData(object).
+## If the gts argument is specified then summariseBy must be single character vector
+##  specifies which metadata column which column to be used for grouping
+##
+## When summariseBy is specified as formula or character vector longer  
+##  than one then maintain as/coerced into a formula and gts is ignored.
+## groupBy, colourBy, lineBy must be parts of formula as assessed by terms()  
+## 
+## gts may be named list of character vectors referring to rownames(object) or a granges
+## When 
   #app <- lapply(gsets,function(x){colMeans(assays(object)[[1]][rowData(object)$name %in% x,])})
   nOfWindows <- object@params$nOfWindows
   if(!is.null(gts)){

@@ -19,6 +19,9 @@ makeMotifScoreRle(pwm, regions, genome, extend, removeRand = FALSE,
 \item{removeRand}{Remove contigs with rand string}
 
 \item{strandScore}{Method for averaging strand. Options are max, mean, sum, bothstrands}
+
+\item{atCentre}{TRUE/FALSE. TRUE assigns score onto 1bp position at centre of motif.
+FALSE assigns every basepair the sum of scores of all overlapping motifs.}
 }
 \description{
 Creates rlelist of pwm scores

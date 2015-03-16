@@ -2,11 +2,12 @@
 
 export(findconsensusRegions)
 export(makeMotifScoreRle)
-export(mergeChIPprofiles)
+export(mergeChIPprofiles.ChIPprofile)
 export(pwmToCoverage)
 export(regionPlot)
 export(summitPipeline)
 exportClasses(ChIPprofile)
+exportMethods(mergeChIPprofiles)
 exportMethods(plotRegion)
 import(Biostrings)
 import(GenomicAlignments)

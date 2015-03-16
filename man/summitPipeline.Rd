@@ -6,7 +6,7 @@
 summitPipeline(reads, peakfile, fragmentLength, readlength)
 }
 \arguments{
-\item{peakFile}{GRanges of region}
+\item{peakfile}{GRanges of region}
 
 \item{reads}{Character vector of bamFile location or GAlignments object}
 
