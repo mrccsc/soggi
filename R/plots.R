@@ -3,7 +3,10 @@
 #' A function to plot regions
 #' 
 #' @usage
-#' \S4method{plotRegion}{ChIPprofile}(object,gts,summariseBy,colourBy,lineBy,groupBy,plotregion,outliers)
+#' \S4method{plotRegion}{ChIPprofile}(object,
+#' gts,summariseBy,
+#' colourBy,lineBy,groupBy,
+#' plotregion,outliers)
 #'
 #'
 #' @docType methods
@@ -44,16 +47,24 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
 ## When 
   #app <- lapply(gsets,function(x){colMeans(assays(object)[[1]][rowData(object)$name %in% x,])})
   nOfWindows <- object@params$nOfWindows
+  
+  ## When running with gts option
+  ## SummariseBy can now only be used to select column for gts to be match to
+  ## and colourBy, lineBy and groupBy will refer to sample metadata or be group
+  
   if(!is.null(gts)){
+    
+    
     profileList <- list()
+    
     for(p in 1:length(assays(object))){
       profileTemp <- assays(object)[[p]]
       if(!is.null(outliers)){
         profileTempList <- lapply(gts,function(x)
-          colMeans(winsorizeMatrix(profileTemp[rowData(object)$name %in% x,],outliers,1-outliers))
+          colMeans(winsorizeMatrix(subsetProfile(profileTemp,x,rowData(object),summariseBy),outliers,1-outliers))
           )         
       }else{
-        profileTempList <- lapply(gts,function(x)colMeans(profileTemp[rowData(object)$name %in% x,])) 
+        profileTempList <- lapply(gts,function(x)colMeans(subsetProfile(profileTemp,x,rowData(object),summariseBy))) 
       }
       profileMatTemp <- melt(as.data.frame(do.call(cbind,profileTempList)))
       if(object@params$style=="region" & plotregion=="full"){
@@ -173,3 +184,22 @@ setGeneric("plotRegion", function(object="ChIPprofile",gts=NULL,summariseBy=NULL
 #' @rdname plotRegion
 #' @export
 setMethod("plotRegion", signature(object="ChIPprofile"), plotRegion.ChIPprofile)
+
+subsetProfile <- function(profile,group,granges,summariseColumn){
+  print(class(group))
+  print(class(group) == "GRanges")  
+  if(class(group) == "character"){
+    print("")
+    if(is.null(summariseColumn)){
+      return(profile[rownames(profile) %in% group,])
+    }else{
+      return(profile[profile[,summariseColumn] %in% group,])
+    }
+  }
+  if(class(group) == "GRanges"){
+    print("MakingGRanges subset")
+    print(granges %over% group)      
+    print(profile[granges %over% group,])          
+    return(profile[granges %over% group,])
+  }
+}

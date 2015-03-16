@@ -6,7 +6,10 @@
 \alias{plotRegion.ChIPprofile}
 \title{Plot regions}
 \usage{
-\S4method{plotRegion}{ChIPprofile}(object,gts,summariseBy,colourBy,lineBy,groupBy,plotregion,outliers)
+\S4method{plotRegion}{ChIPprofile}(object,
+gts,summariseBy,
+colourBy,lineBy,groupBy,
+plotregion,outliers)
 
 \S4method{plotRegion}{ChIPprofile}(object = "ChIPprofile", gts = NULL,
   summariseBy = NULL, colourBy = NULL, lineBy = NULL, groupBy = NULL,
