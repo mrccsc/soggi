@@ -103,11 +103,11 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
     meltedProfileFrame <- do.call(rbind,profileList)
     colnames(meltedProfileFrame) <- c("xIndex","Group","Sample","Score")
 
-  }else if(is.null(gts) & !is.null(summarisedBy)){
+  }else if(is.null(gts) & !is.null(summariseBy)){
       
   }else{
     
-    ## When no summarisedBy or gts supplied colmeans or
+    ## When no summariseBy or gts supplied colmeans or
     ## windsorised colmeans of whole profile matrix
     
     if(!is.null(outliers)){
@@ -143,9 +143,12 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
   }
   #profileList <- lapply(c(assays(object)),function(y)lapply(gsets,function(x){colMeans(y[rowData(object)$name %in% x,])}))
   
+  ## Create geom_path plot
   
   P <- ggplot(meltedProfileFrame,
               aes(x=xIndex,y=Score))+geom_path(alpha = 1,size=1.3)+xlim(0,max(axisIndex))+ylab("Score")+theme(axis.title.y=element_text(angle=0))
+  
+  ## Add scales depending on style and region being plotted
   
   if(object@params$style=="region" & plotregion =="full"){
     P <- P + scale_x_continuous(breaks=c(1,object@params$distanceOutRegionStart+1,
