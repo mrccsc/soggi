@@ -50,15 +50,23 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
   
   ## When running with gts option
   ## SummariseBy can now only be used to select column for gts to be match to
-  ## and colourBy, lineBy and groupBy will refer to sample metadata or be group
+  ## and colourBy, lineBy and groupBy will refer to sample metadata or be "group"
   
   if(!is.null(gts)){
     
-    
     profileList <- list()
     
+    ## Start cycling through assays
     for(p in 1:length(assays(object))){
+    
+    ## extract profile matrix
       profileTemp <- assays(object)[[p]]
+    
+    ## profiles are subset using subsetProfile.
+    ## this allows for subsets by lists of character vector 
+    ## or granges lists.colmeans is then run on these subsets
+    ## Alternatively windsoring (see method) of subsets then colmeans.
+      
       if(!is.null(outliers)){
         profileTempList <- lapply(gts,function(x)
           colMeans(winsorizeMatrix(subsetProfile(profileTemp,x,rowData(object),summariseBy),outliers,1-outliers))
@@ -66,8 +74,13 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
       }else{
         profileTempList <- lapply(gts,function(x)colMeans(subsetProfile(profileTemp,x,rowData(object),summariseBy))) 
       }
+    
+    ## Create melted data frame for ggplot and attach index
+    
       profileMatTemp <- melt(as.data.frame(do.call(cbind,profileTempList)))
-      if(object@params$style=="region" & plotregion=="full"){
+    
+    ## and attach index for different styles of plots
+    if(object@params$style=="region" & plotregion=="full"){
         axisIndex=c(seq(1,(object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)),
                     (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+seq(1,object@params$nOfWindows)*100,
                     (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+
@@ -78,14 +91,25 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
       }
       if(object@params$style=="percentOfRegion"){
         axisIndex=c(seq(1,((nOfWindows*((object@params$distanceAround)/100))*2)+nOfWindows))
-      }      
+      } 
+    
+    ## Add Sample name, group name and index to dataframe
       profileFrame <-data.frame("xIndex"=axisIndex,Group=profileMatTemp[,1],Sample=basename(unlist(exptData(object)["names"]))[p],Score=profileMatTemp[,2])
       
       profileList[[p]] <- profileFrame
     }  
+    
+    ## Join profiles from each sample and fix column names
     meltedProfileFrame <- do.call(rbind,profileList)
     colnames(meltedProfileFrame) <- c("xIndex","Group","Sample","Score")
+
+  }else if(is.null(gts) & !is.null(summarisedBy)){
+      
   }else{
+    
+    ## When no summarisedBy or gts supplied colmeans or
+    ## windsorised colmeans of whole profile matrix
+    
     if(!is.null(outliers)){
       profileList <- lapply(c(assays(object)),function(x)
         colMeans(winsorizeMatrix(x,outliers,1-outliers))
@@ -93,8 +117,14 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
     }else{    
       profileList <- lapply(c(assays(object)),colMeans)
     }
+    
+    ## Join multiple assays/samples
+    
     profileFrame <- do.call(cbind,profileList)
     colnames(profileFrame) <- basename(unlist(exptData(object)["names"]))
+
+    ## Attach index for different styles of plots
+    
     if(object@params$style=="region"){    
       axisIndex=c(seq(1,(object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)),
                   (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+seq(1,object@params$nOfWindows)*100,
@@ -116,6 +146,7 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
   
   P <- ggplot(meltedProfileFrame,
               aes(x=xIndex,y=Score))+geom_path(alpha = 1,size=1.3)+xlim(0,max(axisIndex))+ylab("Score")+theme(axis.title.y=element_text(angle=0))
+  
   if(object@params$style=="region" & plotregion =="full"){
     P <- P + scale_x_continuous(breaks=c(1,object@params$distanceOutRegionStart+1,
                                        (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1),
@@ -165,8 +196,20 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
                                 theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=12))    
   }  
   if(!is.null(gts)){
-    P <- P+aes(group=Group)
+    if(is.null(groupBy) & is.null(colourBy) & is.null(lineBy)){
+      groupBy <- "Group"
+    }
+    P <- P+aes(group="group")+aes_string(colour=colourBy,linetype=lineBy)
+    if(!is.null(groupBy)){
+      
+      facet <- facet_wrap(
+        formula(paste("~",paste(groupBy,collapse="+")))
+      )
+      P <- P + facet
+    
+    }
   }
+  
   return(P)
 }
 
@@ -186,10 +229,8 @@ setGeneric("plotRegion", function(object="ChIPprofile",gts=NULL,summariseBy=NULL
 setMethod("plotRegion", signature(object="ChIPprofile"), plotRegion.ChIPprofile)
 
 subsetProfile <- function(profile,group,granges,summariseColumn){
-  print(class(group))
-  print(class(group) == "GRanges")  
+
   if(class(group) == "character"){
-    print("")
     if(is.null(summariseColumn)){
       return(profile[rownames(profile) %in% group,])
     }else{
@@ -197,7 +238,6 @@ subsetProfile <- function(profile,group,granges,summariseColumn){
     }
   }
   if(class(group) == "GRanges"){
-    print("MakingGRanges subset")
     print(granges %over% group)      
     print(profile[granges %over% group,])          
     return(profile[granges %over% group,])
