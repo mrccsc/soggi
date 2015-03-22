@@ -245,13 +245,17 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
                                 theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=12))    
   } 
   
-  groupBy <- "Sample"
+  
+
   if(!is.null(gts)){
     if(is.null(groupBy) & is.null(colourBy) & is.null(lineBy)){
       groupBy <- "Group"
     }
     #P <- P+aes(group="group")+aes_string(colour=colourBy,linetype=lineBy)   
-    }
+  }
+  if(is.null(groupBy)){
+    groupBy <- "Sample"
+  }
 
   
   if(!is.null(groupBy)){

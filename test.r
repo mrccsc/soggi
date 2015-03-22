@@ -54,24 +54,6 @@ polExp <- c(RNAPII_etoh1,RNAPII_etoh2,RNAPII_tam1,RNAPII_tam2)
 gtsDown <- rownames(namedwholeGeneTable[namedwholeGeneTable$log2FoldChange < -1 & namedwholeGeneTable$padj < 0.05 & !is.na(namedwholeGeneTable$padj),])
 gtsUp <- rownames(namedwholeGeneTable[namedwholeGeneTable$log2FoldChange > 0.5 & namedwholeGeneTable$padj < 0.05 & !is.na(namedwholeGeneTable$padj),])
 
-setMethod("normalise.quantiles", "ChIPprofile",
-          function (object)
-          {
-              
-              tempT <- do.call(cbind,lapply(assays(object),function(x)as.vector(x)))
-              l <- 1
-              
-              for(j in 1:ncol(object)){
-                print(j)
-                tempT[l:(l+nrow(object)-1),] <- normalize.quantiles(tempT[l:(l+nrow(object)-1),])
-                l <- l+nrow(object)
-              }
-              
-              qnormAssays <- lapply(1:ncol(tempT),function(x) matrix(tempT[,x],nrow=nrow(object),byrow = F))
-              normProfile <- SummarizedExperiment(qnormAssays,rowData=rowData(object))
-              exptData(normProfile) <- exptData(object)
-              return(new("ChIPprofile",normProfile,params=object@params))
-          }  
 setMethod("rbind", "ChIPprofile",
           function (x,...)
           {
@@ -90,3 +72,35 @@ exptData(subsetProfile)$names <- c("Diff")
 exptData(subsetProfile)$AlignedReadsInBam <- "Loads"
 fid <- (new("ChIPprofile",subsetProfile,params=normPolExp@params))
 
+
+class1 <- correctedTravelling[correctedTravelling$TSS_log2FoldChange > 0 & 
+                                correctedTravelling$Gene_not_TSSlog2FoldChange > 0 & 
+                                correctedTravelling$Travellinglog2FoldChange > 0,]
+
+class2 <- correctedTravelling[correctedTravelling$TSS_log2FoldChange > 0 & 
+                                correctedTravelling$Gene_not_TSSlog2FoldChange > 0 & 
+                                correctedTravelling$Travellinglog2FoldChange < 0,]
+
+class3 <- correctedTravelling[correctedTravelling$TSS_log2FoldChange > 0 & 
+                                correctedTravelling$Gene_not_TSSlog2FoldChange < 0 & 
+                                correctedTravelling$Travellinglog2FoldChange < 0,]
+
+class4 <- correctedTravelling[correctedTravelling$TSS_log2FoldChange < 0 & 
+                                correctedTravelling$Gene_not_TSSlog2FoldChange > 0 & 
+                                correctedTravelling$Travellinglog2FoldChange > 0,]
+
+class5 <- correctedTravelling[
+  correctedTravelling$Gene_not_TSSlog2FoldChange > 0 & 
+    correctedTravelling$Travellinglog2FoldChange > 0,]
+
+
+class6 <- correctedTravelling[
+  correctedTravelling$Gene_not_TSSlog2FoldChange < 0 & 
+    correctedTravelling$Travellinglog2FoldChange < 0,]
+
+class7 <- correctedTravelling[
+  correctedTravelling$TSS_log2FoldChange < 0 & 
+    correctedTravelling$Travellinglog2FoldChange > 0,]
+
+gts=list(class2=as.vector(class2$Row.names),class3=as.vector(class3$Row.names),class4=as.vector(class4$Row.names),class5=as.vector(class5$Row.names),
+         class6=as.vector(class6$Row.names),class7=as.vector(class7$Row.names))

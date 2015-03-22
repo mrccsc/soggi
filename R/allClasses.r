@@ -127,3 +127,39 @@ setGeneric("normaliseQuantiles", function(object="ChIPprofile") standardGeneric(
 #' @export
 setMethod("normaliseQuantiles", signature(object="ChIPprofile"), normaliseQuantiles.ChIPprofile)
 
+
+setMethod("rbind", "ChIPprofile",
+          function (x,...,deparse.level=1)
+          {
+            assayList <- vector("list",length=length(x))
+            regions <- list(x,...)
+            for(a in 1:length(x)){
+              listTemp <- vector("list",length=length(regions))
+              for(r in 1:length(regions)){
+                listTemp[[r]] <- assays(regions[[r]])[[a]]
+              }
+              assayList[[a]] <- do.call(rbind,listTemp)
+            }
+            newRowData <- unlist(GRangesList(lapply(regions,function(x)rowData(x))))
+            subsetProfile <- SummarizedExperiment(assayList,rowData=newRowData)
+            exptData(subsetProfile)$names <- exptData(subsetProfile)$names
+            exptData(subsetProfile)$AlignedReadsInBam <- exptData(subsetProfile)$AlignedReadsInBam
+            return(new("ChIPprofile",subsetProfile,params=x@params))            
+          }
+)
+
+setMethod("[[", c("ChIPprofile", "ANY", "missing"),
+          function(x, i, j, ...)
+          {
+            assays(x)[[i, ...]]
+          })
+
+setReplaceMethod("[[",
+                 c("ChIPprofile", "ANY", "missing", "ANY"),
+                 function(x, i, j, ..., value)
+                 {
+                   assays(x)[[i, ...]] <- value
+                   x
+    
+             })
+
