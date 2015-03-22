@@ -35,3 +35,38 @@ RNAPII_etoh1 <- regionPlot("/Users/tcarroll//Desktop/ziwei//RNAPII-Exp3-ETOHDupM
 RNAPII_etoh2 <- regionPlot("/Users/tcarroll//Desktop/ziwei//RNAPII-Exp4-ETOHDupMarked.bam",mm9PC,style="region",format="bam")
 #RNAPII_etoh3 <- regionPlot("/Users/tcarroll//Desktop/ziwei//pol0h_Rep1DupMarked.bam",mm9PC,style="region",format="bam")
 #RNAPII_etoh4 <- regionPlot("/Users/tcarroll//Desktop/ziwei//pol0h_Rep2DupMarked.bam",mm9PC,style="region",format="bam")
+
+mm9PCTest <- mm9PC[width(mm9PC) > 1000]
+
+
+RNAPII_tam1 <- regionPlot("/Users/tcarroll//Desktop/ziwei//RNAPII-Exp3-4OHTDupMarked.bam",mm9PCTest,style="percentOfRegion",format="bam",distanceAround = 100)
+RNAPII_tam2 <- regionPlot("/Users/tcarroll//Desktop/ziwei//RNAPII-Exp4-4OHTDupMarked.bam",mm9PCTest,style="percentOfRegion",format="bam",distanceAround = 100)
+#RNAPII_tam3 <- regionPlot("/Users/tcarroll//Desktop/ziwei//pol6h_Rep1DupMarked.bam",mm9PC,style="region",format="bam")
+#RNAPII_tam4 <- regionPlot("/Users/tcarroll//Desktop/ziwei//pol6h_Rep2DupMarked.bam",mm9PC,style="region",format="bam")
+
+RNAPII_etoh1 <- regionPlot("/Users/tcarroll//Desktop/ziwei//RNAPII-Exp3-ETOHDupMarked.bam",mm9PCTest,style="percentOfRegion",format="bam",distanceAround = 100)
+RNAPII_etoh2 <- regionPlot("/Users/tcarroll//Desktop/ziwei//RNAPII-Exp4-ETOHDupMarked.bam",mm9PCTest,style="percentOfRegion",format="bam",distanceAround = 100)
+#RNAPII_etoh3 <- regionPlot("/Users/tcarroll//Desktop/ziwei//pol0h_Rep1DupMarked.bam",mm9PC,style="region",format="bam")
+#RNAPII_etoh4 <- regionPlot("/Users/tcarroll//Desktop/ziwei//pol0h_Rep2DupMarked.bam",mm9PC,style="region",format="bam")
+polExp <- c(RNAPII_etoh1,RNAPII_etoh2,RNAPII_tam1,RNAPII_tam2)
+tempT <- do.call(cbind,lapply(assays(polExp),function(x)as.vector(x)))
+l <- 1
+
+for(j in 1:ncol(polExp)){
+  print(j)
+  tempT[l:(l+nrow(polExp)-1),] <- normalize.quantiles(tempT[l:(l+nrow(polExp)-1),])
+  l <- l+nrow(polExp)
+}
+
+setMethod("rbind", "ChIPprofile",
+          function (x,...)
+          {
+            assayList <- lapply(list(x,...),function(x)assays(x)[[1]])
+            subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(x))
+            exptData(subsetProfile)$names <- unlist(lapply(list(x,...),function(x)exptData(x)$name))
+            exptData(subsetProfile)$AlignedReadsInBam <- unlist(lapply(list(x,...),function(x)exptData(x)$AlignedReadsInBam))
+            return(new("ChIPprofile",subsetProfile,params=x@params))
+            
+          }
+)
+

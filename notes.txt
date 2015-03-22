@@ -3,3 +3,5 @@ bigmemory
 orientBy
 display percentage in (and +- 1std percentage)
 colData carries metadata ..supplied in metadata argument.
+
+http://www.bioconductor.org/packages/release/bioc/vignettes/cqn/inst/doc/cqn.pdf
