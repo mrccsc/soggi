@@ -222,13 +222,13 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
     message("..Done")
   }
   
-  if(style=="percentOfRegion"){
-    message("Filtering regions which are smaller than windows into region...",appendLF = FALSE)
-    ## Split Regions into those on positive and negative strands..
-    testRangesPos <- testRangesPos[width(testRangesPos) > nOfWindows]
-    testRangesNeg <- testRangesNeg[width(testRangesPos) > nOfWindows]
-    message("..Done")
-  }  
+#  if(style=="percentOfRegion"){
+#    message("Filtering regions which are smaller than windows into region...",appendLF = FALSE)
+#    ## Split Regions into those on positive and negative strands..
+#    testRangesPos <- testRangesPos[width(testRangesPos) > nOfWindows]
+#    testRangesNeg <- testRangesNeg[width(testRangesPos) > nOfWindows]
+#    message("..Done")
+#  }  
   
   if(style=="region"){
     message("Filtering regions which are smaller than windows into region...",appendLF = FALSE)

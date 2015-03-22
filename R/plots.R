@@ -104,7 +104,53 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
     colnames(meltedProfileFrame) <- c("xIndex","Group","Sample","Score")
 
   }else if(is.null(gts) & !is.null(summariseBy)){
+      profileList <- list()
       
+      ## Start cycling through assays
+      for(p in 1:length(assays(object))){
+            
+            ## extract profile matrix
+          profileTemp <- assays(object)[[p]]
+            
+          mcols(rowData(object))$summariseCol <- apply(as.data.frame(mcols(rowData(object))[,summariseBy,drop=F]) , 1 , paste , collapse = "-" )
+          gts <- as.list(unique(mcols(rowData(object))$summariseCol))
+          summariseBy <- "summariseCol"
+          names(gts) <- unlist(gts)
+          if(!is.null(outliers)){
+            profileTempList <- lapply(gts,function(x)
+              colMeans(winsorizeMatrix(subsetProfile(profileTemp,x,rowData(object),summariseBy),outliers,1-outliers))
+            )         
+          }else{
+            profileTempList <- lapply(gts,function(x)colMeans(subsetProfile(profileTemp,x,rowData(object),summariseBy))) 
+          }
+      
+    
+    ## Create melted data frame for ggplot and attach index
+    
+    profileMatTemp <- melt(as.data.frame(do.call(cbind,profileTempList)))
+    if(object@params$style=="region" & plotregion=="full"){
+      axisIndex=c(seq(1,(object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)),
+                  (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+seq(1,object@params$nOfWindows)*100,
+                  (object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+
+                    seq(1,(object@params$distanceInRegionEnd+object@params$distanceOutRegionEnd+1)))
+    }
+    if(object@params$style=="point"){
+      axisIndex=c(seq(1,(object@params$distanceAround+object@params$distanceAround+1)))
+    }
+    if(object@params$style=="percentOfRegion"){
+      axisIndex=c(seq(1,((nOfWindows*((object@params$distanceAround)/100))*2)+nOfWindows))
+    } 
+    
+    ## Add Sample name, group name and index to dataframe
+    profileFrame <-data.frame("xIndex"=axisIndex,Group=profileMatTemp[,1],Sample=basename(unlist(exptData(object)["names"]))[p],Score=profileMatTemp[,2])
+    
+    profileList[[p]] <- profileFrame
+  }  
+  
+  ## Join profiles from each sample and fix column names
+  meltedProfileFrame <- do.call(rbind,profileList)
+  colnames(meltedProfileFrame) <- c("xIndex","Group","Sample","Score")
+  
   }else{
     
     ## When no summariseBy or gts supplied colmeans or
@@ -232,12 +278,13 @@ setGeneric("plotRegion", function(object="ChIPprofile",gts=NULL,summariseBy=NULL
 setMethod("plotRegion", signature(object="ChIPprofile"), plotRegion.ChIPprofile)
 
 subsetProfile <- function(profile,group,granges,summariseColumn){
-
+  print(summariseColumn)
+  print(colnames(mcols(granges)))
   if(class(group) == "character"){
     if(is.null(summariseColumn)){
       return(profile[rownames(profile) %in% group,])
     }else{
-      return(profile[profile[,summariseColumn] %in% group,])
+      return(profile[mcols(granges)[,summariseColumn] %in% group,])
     }
   }
   if(class(group) == "GRanges"){
