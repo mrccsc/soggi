@@ -70,3 +70,16 @@ setGeneric("mergeChIPprofiles", function(x="ChIPprofile",y="ChIPprofile") standa
 #' @export
 setMethod("mergeChIPprofiles", signature(x="ChIPprofile",y="ChIPprofile"), mergeChIPprofiles.ChIPprofile)
 
+setMethod("c", "ChIPprofile",
+          function (x,...)
+          {
+            assayList <- lapply(list(x,...),function(x)assays(x)[[1]])
+            subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(x))
+            exptData(subsetProfile)$names <- unlist(lapply(list(x,...),function(x)exptData(x)$name))
+            exptData(subsetProfile)$AlignedReadsInBam <- unlist(lapply(list(x,...),function(x)exptData(x)$AlignedReadsInBam))
+            return(new("ChIPprofile",subsetProfile,params=x@params))
+            
+          }
+)
+
+

@@ -243,21 +243,30 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
                               labels=c("End-1500","Centre","End+1500"),
                               limits=(object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+c(1,object@params$distanceInRegionEnd+1+object@params$distanceOutRegionEnd))+
                                 theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=12))    
-  }  
+  } 
+  
   if(!is.null(gts)){
     if(is.null(groupBy) & is.null(colourBy) & is.null(lineBy)){
       groupBy <- "Group"
     }
-    P <- P+aes(group="group")+aes_string(colour=colourBy,linetype=lineBy)
-    if(!is.null(groupBy)){
-      
-      facet <- facet_wrap(
-        formula(paste("~",paste(groupBy,collapse="+")))
-      )
-      P <- P + facet
-    
+    #P <- P+aes(group="group")+aes_string(colour=colourBy,linetype=lineBy)   
     }
+  if(is.null(groupBy) & length(assays(object)) > 1){
+    groupBy <- "Sample"
   }
+  
+  if(!is.null(groupBy)){
+    
+    facet <- facet_wrap(
+      formula(paste("~",paste(groupBy,collapse="+")))
+    )
+    P <- P + facet
+    
+  }
+  
+  P <- P+facet+aes_string(colour=colourBy,linetype=lineBy)
+  
+
   
   return(P)
 }
