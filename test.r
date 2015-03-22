@@ -49,15 +49,29 @@ RNAPII_etoh2 <- regionPlot("/Users/tcarroll//Desktop/ziwei//RNAPII-Exp4-ETOHDupM
 #RNAPII_etoh3 <- regionPlot("/Users/tcarroll//Desktop/ziwei//pol0h_Rep1DupMarked.bam",mm9PC,style="region",format="bam")
 #RNAPII_etoh4 <- regionPlot("/Users/tcarroll//Desktop/ziwei//pol0h_Rep2DupMarked.bam",mm9PC,style="region",format="bam")
 polExp <- c(RNAPII_etoh1,RNAPII_etoh2,RNAPII_tam1,RNAPII_tam2)
-tempT <- do.call(cbind,lapply(assays(polExp),function(x)as.vector(x)))
-l <- 1
 
-for(j in 1:ncol(polExp)){
-  print(j)
-  tempT[l:(l+nrow(polExp)-1),] <- normalize.quantiles(tempT[l:(l+nrow(polExp)-1),])
-  l <- l+nrow(polExp)
-}
 
+gtsDown <- rownames(namedwholeGeneTable[namedwholeGeneTable$log2FoldChange < -1 & namedwholeGeneTable$padj < 0.05 & !is.na(namedwholeGeneTable$padj),])
+gtsUp <- rownames(namedwholeGeneTable[namedwholeGeneTable$log2FoldChange > 0.5 & namedwholeGeneTable$padj < 0.05 & !is.na(namedwholeGeneTable$padj),])
+
+setMethod("normalise.quantiles", "ChIPprofile",
+          function (object)
+          {
+              
+              tempT <- do.call(cbind,lapply(assays(object),function(x)as.vector(x)))
+              l <- 1
+              
+              for(j in 1:ncol(object)){
+                print(j)
+                tempT[l:(l+nrow(object)-1),] <- normalize.quantiles(tempT[l:(l+nrow(object)-1),])
+                l <- l+nrow(object)
+              }
+              
+              qnormAssays <- lapply(1:ncol(tempT),function(x) matrix(tempT[,x],nrow=nrow(object),byrow = F))
+              normProfile <- SummarizedExperiment(qnormAssays,rowData=rowData(object))
+              exptData(normProfile) <- exptData(object)
+              return(new("ChIPprofile",normProfile,params=object@params))
+          }  
 setMethod("rbind", "ChIPprofile",
           function (x,...)
           {
@@ -69,4 +83,10 @@ setMethod("rbind", "ChIPprofile",
             
           }
 )
+
+assyCom <- log2(assays(normPolExp)[[3]]+assays(normPolExp)[[4]]) - log2(assays(normPolExp)[[1]]+assays(normPolExp)[[2]])
+subsetProfile <- SummarizedExperiment(assyCom,rowData=rowData(normPolExp))
+exptData(subsetProfile)$names <- c("Diff")
+exptData(subsetProfile)$AlignedReadsInBam <- "Loads"
+fid <- (new("ChIPprofile",subsetProfile,params=normPolExp@params))
 

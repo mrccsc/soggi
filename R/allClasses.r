@@ -83,3 +83,47 @@ setMethod("c", "ChIPprofile",
 )
 
 
+#' Normalise quantile
+#'
+#' Quantile normalisation across bins/regions.
+#' 
+#' @usage
+#' \S4method{normaliseQuantiles}{ChIPprofile}(object)
+#'
+#' @docType methods
+#' @name normaliseQuantiles
+#' @rdname normaliseQuantiles
+#' @aliases normaliseQuantiles normaliseQuantiles,ChIPprofile-method
+#' 
+#' @author Thomas Carroll
+#'
+#' @export
+#' @param object A ChIPprofile object 
+normaliseQuantiles.ChIPprofile <-  function (object)
+          {
+            
+            tempT <- do.call(cbind,lapply(assays(object),function(x)as.vector(x)))
+            l <- 1
+            
+            for(j in 1:ncol(object)){
+              print(j)
+              tempT[l:(l+nrow(object)-1),] <- normalize.quantiles(tempT[l:(l+nrow(object)-1),])
+              l <- l+nrow(object)
+            }
+            
+            qnormAssays <- lapply(1:ncol(tempT),function(x) matrix(tempT[,x],nrow=nrow(object),byrow = F))
+            for(c in 1:length(qnormAssays)){
+              colnames(qnormAssays[[c]]) <- colnames(assays(object)[[c]])
+            }     
+            normProfile <- SummarizedExperiment(qnormAssays,rowData=rowData(object))
+            exptData(normProfile) <- exptData(object)
+            return(new("ChIPprofile",normProfile,params=object@params))
+          }  
+
+
+setGeneric("normaliseQuantiles", function(object="ChIPprofile") standardGeneric("normaliseQuantiles"))
+
+#' @rdname normaliseQuantiles
+#' @export
+setMethod("normaliseQuantiles", signature(object="ChIPprofile"), normaliseQuantiles.ChIPprofile)
+

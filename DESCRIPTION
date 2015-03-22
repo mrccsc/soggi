@@ -27,6 +27,7 @@ Imports:
     XML,
     tractor.base,
     stringr,
+    preprocessCore
 Collate:
     'allClasses.r'
     'motifTools.R'
