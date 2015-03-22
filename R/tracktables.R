@@ -371,10 +371,10 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
       if(format %in% c("rlelist","pwm","granges")){
         exptData(profileSample)  <- list(names=c("Sample"))
       }else{
-        exptData(profileSample)<- list(names=c(bamFile))  
+        exptData(profileSample)<- list(names=c(bamFile),AlignedReadsInBam=totalReads)  
       }
     } else{
-      exptData(profileSample)<- list(names=samplename)
+      exptData(profileSample)<- list(names=samplename,AlignedReadsInBam=totalReads)
     }
     
     ## Pass parameters
@@ -485,10 +485,10 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
         if(format %in% c("rlelist","pwm","granges")){
           exptData(profileSample)  <- list(names=c("Sample"))
         }else{
-          exptData(profileSample)<- list(names=c(bamFile))  
+          exptData(profileSample)<- list(names=c(bamFile),AlignedReadsInBam=totalReads)  
         }
       } else{
-        exptData(profileSample)<- list(names=samplename)
+        exptData(profileSample)<- list(names=samplename,AlignedReadsInBam=totalReads)
       }
       
       ## Pass parameters
@@ -717,10 +717,10 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
       if(format %in% c("rlelist","pwm","granges")){
         exptData(profileSample)  <- list(names=c("Sample"))
       }else{
-        exptData(profileSample)<- list(names=c(bamFile))  
+        exptData(profileSample)<- list(names=c(bamFile),AlignedReadsInBam=totalReads)  
       }
     }else{
-      exptData(profileSample)<- list(names=samplename)
+      exptData(profileSample)<- list(names=samplename,AlignedReadsInBam=totalReads)
     }
     
     ## Pass parameters
@@ -957,10 +957,10 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
       if(format %in% c("rlelist","pwm","granges")){
         exptData(profileSample)  <- list(names=c("Sample"))
       }else{
-        exptData(profileSample)<- list(names=c(bamFile))  
+        exptData(profileSample)<- list(names=c(bamFile),AlignedReadsInBam=totalReads)  
       }
     }else{
-      exptData(profileSample)<- list(names=samplename)
+      exptData(profileSample)<- list(names=samplename,AlignedReadsInBam=totalReads)
     }
     
     ## Pass parameters
