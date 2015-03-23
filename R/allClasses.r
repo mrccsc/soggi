@@ -142,8 +142,27 @@ setMethod("rbind", "ChIPprofile",
             }
             newRowData <- unlist(GRangesList(lapply(regions,function(x)rowData(x))))
             subsetProfile <- SummarizedExperiment(assayList,rowData=newRowData)
-            exptData(subsetProfile)$names <- exptData(subsetProfile)$names
-            exptData(subsetProfile)$AlignedReadsInBam <- exptData(subsetProfile)$AlignedReadsInBam
+            exptData(subsetProfile)$names <- exptData(x)$names
+            exptData(subsetProfile)$AlignedReadsInBam <- exptData(x)$AlignedReadsInBam
+            return(new("ChIPprofile",subsetProfile,params=x@params))            
+          }
+)
+
+setMethod("cbind", "ChIPprofile",
+          function (x,...,deparse.level=1)
+          {
+            assayList <- vector("list",length=length(x))
+            regions <- list(x,...)
+            for(a in 1:length(x)){
+              listTemp <- vector("list",length=length(regions))
+              for(r in 1:length(regions)){
+                listTemp[[r]] <- assays(regions[[r]])[[a]]
+              }
+              assayList[[a]] <- do.call(cbind,listTemp)
+            }
+            subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(x))
+            exptData(subsetProfile)$names <- exptData(x)$names
+            exptData(subsetProfile)$AlignedReadsInBam <- exptData(x)$AlignedReadsInBam
             return(new("ChIPprofile",subsetProfile,params=x@params))            
           }
 )
@@ -151,15 +170,18 @@ setMethod("rbind", "ChIPprofile",
 setMethod("[[", c("ChIPprofile", "ANY", "missing"),
           function(x, i, j, ...)
           {
-            assays(x)[[i, ...]]
+            subsetProfile <- SummarizedExperiment(assays(x)[[i, ...]],rowData=rowData(x))
+            exptData(subsetProfile)$names <- exptData(x)$names[i]
+            exptData(subsetProfile)$AlignedReadsInBam <- exptData(x)$AlignedReadsInBam[i]
+            return(new("ChIPprofile",subsetProfile,params=x@params))                        
           })
 
-setReplaceMethod("[[",
-                 c("ChIPprofile", "ANY", "missing", "ANY"),
-                 function(x, i, j, ..., value)
-                 {
-                   assays(x)[[i, ...]] <- value
-                   x
-    
-             })
+
+
+setMethod("$", "ChIPprofile",
+          function(x, name)
+          {
+            x[[which(exptData(x)$names %in% name)]]
+          })
+
 

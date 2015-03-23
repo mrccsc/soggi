@@ -4,7 +4,7 @@
 #' 
 #' @usage
 #' \S4method{plotRegion}{ChIPprofile}(object,
-#' gts,summariseBy,
+#' gts,sampleData,groupData,summariseBy,
 #' colourBy,lineBy,groupBy,
 #' plotregion,outliers)
 #'
@@ -19,6 +19,8 @@
 #' @param object A ChIPprofile object 
 #' @param gts A list of character vectors and GRanges
 #' @param plotregion region to plot
+#' @param groupData Dataframe of metadata for groups
+#' @param sampleData Dataframe of metadata for sample
 #' @param summariseBy Column names from GRanges elementmetadata. Formula or character vector of column names to use
 #' to collapse genomic ranges to summarised profiles.
 #' summariseBy can not be used injustion with groups specified by gts argument.
@@ -30,7 +32,7 @@
 #' @param groupBy Character vector or formula of either column names from colData(object) containing
 #' sample metadata or character "group" to colour by groups in gts
 #' @param outliers A numeric vector of length 1 containing proportion to exclude from limits 
-plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NULL,lineBy=NULL,groupBy=NULL,plotregion="full",outliers=NULL)
+plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NULL,summariseBy=NULL,colourBy=NULL,lineBy=NULL,groupBy=NULL,plotregion="full",outliers=NULL)
 {
   
 ## This function can work using two main grouping logics
@@ -190,6 +192,13 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,summariseBy=NULL,colourBy=NUL
   #profileList <- lapply(c(assays(object)),function(y)lapply(gsets,function(x){colMeans(y[rowData(object)$name %in% x,])}))
   
   ## Create geom_path plot
+  if(!is.null(gts) & !is.null(groupData)){
+    meltedProfileFrame <- merge(meltedProfileFrame,groupData,by.x=2,by.y=1,all.x=T,all.y=F,sort=F)
+  }
+  if(!is.null(sampleData)){
+    sampleNameCol <- which(colnames(meltedProfileFrame) %in% "Sample")
+    meltedProfileFrame <- merge(meltedProfileFrame,sampleData,by.x=sampleNameCol,by.y=1,all.x=T,all.y=F,sort=F)
+  }
   
   P <- ggplot(meltedProfileFrame,
               aes(x=xIndex,y=Score))+geom_path(alpha = 1,size=1.3)+xlim(0,max(axisIndex))+ylab("Score")+theme(axis.title.y=element_text(angle=0))
@@ -283,7 +292,7 @@ winsorizeVector <- function(vect,limitlow,limithigh){
   vect[vect > qs[2]] <- qs[2]  
   vect
 }
-setGeneric("plotRegion", function(object="ChIPprofile",gts=NULL,summariseBy=NULL,colourBy=NULL,lineBy=NULL,groupBy=NULL,plotregion="character",outliers=NULL) standardGeneric("plotRegion"))
+setGeneric("plotRegion", function(object="ChIPprofile",gts=NULL,sampleData=NULL,groupData=NULL,summariseBy=NULL,colourBy=NULL,lineBy=NULL,groupBy=NULL,plotregion="character",outliers=NULL) standardGeneric("plotRegion"))
 
 #' @rdname plotRegion
 #' @export

@@ -7,13 +7,14 @@
 \title{Plot regions}
 \usage{
 \S4method{plotRegion}{ChIPprofile}(object,
-gts,summariseBy,
+gts,sampleData,groupData,summariseBy,
 colourBy,lineBy,groupBy,
 plotregion,outliers)
 
 \S4method{plotRegion}{ChIPprofile}(object = "ChIPprofile", gts = NULL,
-  summariseBy = NULL, colourBy = NULL, lineBy = NULL, groupBy = NULL,
-  plotregion = "full", outliers = NULL)
+  sampleData = NULL, groupData = NULL, summariseBy = NULL,
+  colourBy = NULL, lineBy = NULL, groupBy = NULL, plotregion = "full",
+  outliers = NULL)
 }
 \arguments{
 \item{object}{A ChIPprofile object}
@@ -21,6 +22,10 @@ plotregion,outliers)
 \item{gts}{A list of character vectors and GRanges}
 
 \item{plotregion}{region to plot}
+
+\item{groupData}{Dataframe of metadata for groups}
+
+\item{sampleData}{Dataframe of metadata for sample}
 
 \item{summariseBy}{Column names from GRanges elementmetadata. Formula or character vector of column names to use
 to collapse genomic ranges to summarised profiles.
