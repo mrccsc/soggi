@@ -294,6 +294,12 @@ zeroToMin <- function(x){
 zeroToMin2 <- function(x){
   for(a in 1:length(assays(x))){
     temp <- assays(x)[[a]]
+    ZeroRows <- rowSums(temp) == 0
+    temp[ZeroRows,] <- min(temp[temp != 0])
+    for(r in 1:nrow(temp)){
+      print(r)
+      temp[r,temp[r,] == 0] <- min(temp[r,temp[r,] != 0])
+    }
     for(r in 1:nrow(temp)){
       print(r)
       temp[r,temp[r,] == 0] <- min(temp[r,temp[r,] != 0])
@@ -336,6 +342,16 @@ normalise.ChIPprofile <-  function (object,method="rpm",normFactors=NULL)
     exptData(subsetProfile)$AlignedReadsInBam <- exptData(object)$AlignedReadsInBam
     return(new("ChIPprofile",subsetProfile,params=object[[1]]@params))                                                  
   }
+  if(method=="signalInRegion"){
+    assayList <- assays(object)
+    for(k in 1:length(assayList)){
+      assayList[[k]] <- t(t(assayList[[k]])/rowSums(assayList[[k]],na.rm=T))
+    }
+    subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(object))
+    exptData(subsetProfile)$names <- exptData(object)$names
+    exptData(subsetProfile)$AlignedReadsInBam <- exptData(object)$AlignedReadsInBam
+    return(new("ChIPprofile",subsetProfile,params=object[[1]]@params))                                                  
+  }  
   }
   
 
