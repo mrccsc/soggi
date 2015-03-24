@@ -27,7 +27,10 @@ Imports:
     XML,
     tractor.base,
     stringr,
-    preprocessCore
+    preprocessCore,
+    chipseq,
+    caTools,
+    ChIPQC
 Collate:
     'allClasses.r'
     'motifTools.R'

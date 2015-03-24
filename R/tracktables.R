@@ -1,46 +1,9 @@
-#' Plot coverage of points or regions.
+#' The soggi function is the constructor for ChIPprofile objects.
 #'
-#' @param bamFile Character vector for location of BAM file.
-#' @param testRanges GRanges object of regions to plot.
-#' @param samplename Character vector of sample name. Default is NULL.
-#' @param nOfWindows Number of windows to bin regions into for coverage calculations (Default 100)
-#' @param FragmentLength Integer vector Predicted or expected fragment length.
-#' @param style Point or region (see details)
-#' @param distanceAround Distance around centre of region to be used for plotting
-#' @param distanceUp Distance upstream from centre of region to be used for plotting
-#' @param distanceDown Distance downstream from centre of region to be used for plotting
-#' @param distanceInRegionStart Distance into region start 
-#' (5' for Watson/positive strand or notspecified strand Regions,3' for Crick/negatie strand regions) 
-#' for plotting.
-#' @param distanceOutRegionStart Distance out from region start 
-#' (5' for Watson/positive strand or notspecified strand Regions,3' for Crick/negatie strand regions) 
-#' for plotting.
-#' @param distanceInRegionEnd Distance into region end 
-#' (3' for Watson/positive strand or notspecified strand Regions,5' for Crick/negatie strand regions) 
-#' for plotting.
-#' @param distanceOutRegionEnd Distance out from region end 
-#' (3' for Watson/positive strand or notspecified strand Regions,5' for Crick/negatie strand regions) 
-#' for plotting.
-#' @param paired Is data paired end 
-#' @param normalize Calculate coverage as RPM. Presently only RPM available.
-#' @param plotBy Score to be used for plotting. Presently only coverage.
-#' @param removeDup Remove duplicates before calculating coverage.
-#' @param verbose TRUE or FALSE
-#' @param format BAM or BigWig
-#' @param seqlengths Chromosomes to be used. If missing will report all.
-#' @param forceFragment Centre fragment and force consistent fragment width.
-#' @param method Character vector of value "bp","bin" or "spline". 
-#' The bin method divides a region of interest into equal sized bins of number specified in nOfWindows.
-#' Coverage or counts are then summarised within these windows.
-#' The spline method creates a spline with the number of spline points as specified in nOfWindows argument.
-#' @param downSample Down sample GRanges or bamFile to this proportion of orginal.
-#' @param genome BSGenome object to be used when using PWM input.
-#' @param cutoff Cut-off for idnetifying motifs when using PWM input.
-#' @param minFragmentLength Remove fragments smaller than this.
-#' @param maxFragmentLength Remove fragments larger than this. 
-#' @return ChIPprofile A ChIPprofile object. 
+#' @name soggi
+#' @rdname ChIPprofile
 #' @export
-#' @import IRanges GenomicRanges ggplot2 QuasR rtracklayer GenomicAlignments GenomicRanges XVector Rsamtools reshape2 Biostrings tractor.base stringr XML preprocessCore
+#' @import IRanges GenomicRanges ggplot2 QuasR rtracklayer GenomicAlignments GenomicRanges XVector Rsamtools reshape2 Biostrings tractor.base stringr XML preprocessCore chipseq caTools ChIPQC
 #' @include allClasses.r plots.R peakTransforms.r
 regionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceUp=1500,distanceDown=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,verbose=T,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80,downSample=NULL,minFragmentLength=NULL,maxFragmentLength=NULL){
   if(!verbose){
