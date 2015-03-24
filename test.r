@@ -102,5 +102,30 @@ class7 <- correctedTravelling[
   correctedTravelling$TSS_log2FoldChange < 0 & 
     correctedTravelling$Travellinglog2FoldChange > 0,]
 
+class8 <- correctedTravelling[
+  correctedTravelling$TSS_log2FoldChange > 0 & 
+    correctedTravelling$Travellinglog2FoldChange < 0,]
+
+class1 <- correctedTravelling[correctedTravelling$TSS_log2FoldChange > 0 & 
+                                correctedTravelling$Gene_not_TSSlog2FoldChange > 0 & 
+                                correctedTravelling$Travellinglog2FoldChange > 0,]
+
 gts=list(class2=as.vector(class2$Row.names),class3=as.vector(class3$Row.names),class4=as.vector(class4$Row.names),class5=as.vector(class5$Row.names),
          class6=as.vector(class6$Row.names),class7=as.vector(class7$Row.names))
+
+
+HAranges <- ChIPQC:::GetGRanges("/Users/tcarroll//Downloads//HA_WithInput_Input_peaks.bed")
+Endoranges <- ChIPQC:::GetGRanges("/Users/tcarroll//Downloads//Endogenous_WithInput_Input_peaks.bed")
+
+tom <- list(HAranges,Endoranges)
+names(tom) <- c("ha","endo")
+
+dnase <- regionPlot("/Users/tcarroll//Downloads/DNAseDupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
+pol2 <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/RNAPol2DupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
+pol2ser <- regionPlot("/Users/tcarroll/Downloads/RNAPol2ser2DupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
+h3k4me3 <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K4me3_IkNegDupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
+h3k9ac <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K9ac_IkNegDupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
+
+tom <- c(dnase,pol2,pol2ser,h3k4me3,h3k9ac)
+tom <- log2(zeroToMin2(tom))
+p <- plotRegion(tom,outliers=0.01,colourBy="Sample")

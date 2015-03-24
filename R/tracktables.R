@@ -105,6 +105,7 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
     distanceUpStart <- NULL
     distanceDownEnd <- NULL    
   }
+  totalReads <- NA
   
   
   ## If format is bam, read header and get contig information

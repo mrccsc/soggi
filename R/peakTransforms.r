@@ -223,3 +223,53 @@ RleSumAny <- function (e1, e2)
 }
 library(BiocParallel)
 library(GenomicAlignments)
+
+
+#' Create GRangeslist from all combinations of GRanges
+#'
+#' @param testRanges A named list of GRanges or a named GRangesList 
+#' @return groupedGRanges A named GRangesList object. 
+#' @export
+groupByOverlaps <- function(testRanges){
+  
+  testRanges <- GRangesList(
+    lapply(
+      testRanges,
+      ChIPQC:::GetGRanges)
+  )
+  allRegionsReduced <- reduce(
+    unlist(testRanges)
+  )
+  
+  overlapMat <- do.call(cbind,
+                        lapply(1:length(testRanges),
+                               function(x) ifelse((allRegionsReduced %over% testRanges[[x]]),names(testRanges)[x],""))
+                        )
+  
+  colnames(overlapMat) <- names(testRanges)
+  mcols(allRegionsReduced)$grangesGroups <- as.factor(gsub("--|^-|-$","",
+                                                 apply(overlapMat, 1 , paste , collapse = "-" )
+                                                ))
+  
+  groupedGRangesList <- lapply(levels(allRegionsReduced$grangesGroups),
+         function(x)allRegionsReduced[allRegionsReduced$grangesGroups %in% x])
+  names(groupedGRangesList) <- levels(allRegionsReduced)
+  return(groupedGRangesList)
+}
+
+#' Set strand by overlapping or nearest anchor GRanges
+#'
+#' @param testRanges The GRanges object to anchor. 
+#' @param anchorRanges A GRanges object by which to anchor strand orientation. 
+#' @return newRanges A GRanges object. 
+#' @export
+orientBy <- function(testRanges,anchorRanges){
+  distIndex <- distanceToNearest(testRanges,anchorRanges)
+  anchorRangesFilt <- anchorRanges[subjectHits(distIndex)]
+#   widths <- width(pintersect(testRanges,anchorRangesFilt,resolve.empty="max.start"))
+#   testRanges$distance <- elementMetadata(distIndex)$distance
+#   testRanges$overlapsize <- widths
+#   anchorRangesFilt <- anchorRangesFilt[order(elementMetadata(distIndex)$distance,widths),]
+  strand(testRanges) <- strand(anchorRangesFilt)
+}
+
