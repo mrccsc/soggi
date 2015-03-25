@@ -16,7 +16,7 @@ findconsensusRegions <- function(testRanges,bamFiles=NULL,method="majority",summ
   testRanges <- GRangesList(
     bplapply(
       testRanges,
-      ChIPQC:::GetGRanges)
+      GetGRanges)
     )
   
   ans <- lapply(
@@ -86,7 +86,7 @@ dropNonPrimary <- function(x,consensusRanges,id="elementMetadata.ID",score="summ
 #' @export
 summitPipeline <- function(reads,peakfile,fragmentLength,readlength){
   message("Reading in peaks..",appendLF=FALSE)
-  testRanges <- ChIPQC:::GetGRanges(peakfile)
+  testRanges <- GetGRanges(peakfile)
   message("done")  
   if(class(reads) == "GAlignments"){
     message("Alignments loaded")
@@ -157,7 +157,7 @@ return(cc_scores)
 
 getFragmentLength <- function(x,readLength){
   #peaks <- which(diff(sign(diff(x, na.pad = FALSE)), na.pad = FALSE) < 0)+1
-  MaxShift <- which.max(caTools:::runmean(x[-seq(1,(2*readLength))],10))+2*readLength
+  MaxShift <- which.max(caTools::runmean(x[-seq(1,(2*readLength))],10))+2*readLength
   
 }
   
@@ -174,7 +174,7 @@ runFindSummit <- function(testRanges,reads,fragmentLength=NULL){
                   bplapply(
     unique(seqnames(reads))[unique(seqnames(reads)) %in% unique(seqnames(testRanges))],
     function(x) 
-    ChIPQC:::findCovMaxPos(reads[seqnames(testRanges) %in% x],testRanges[seqnames(testRanges) %in% x],seqlengths(reads)[names(seqlengths(reads)) %in% x],fragmentLength)
+    findCovMaxPos(reads[seqnames(testRanges) %in% x],testRanges[seqnames(testRanges) %in% x],seqlengths(reads)[names(seqlengths(reads)) %in% x],fragmentLength)
     )
   )
   return(test)                                        
@@ -235,7 +235,7 @@ groupByOverlaps <- function(testRanges){
   testRanges <- GRangesList(
     lapply(
       testRanges,
-      ChIPQC:::GetGRanges)
+      GetGRanges)
   )
   allRegionsReduced <- reduce(
     unlist(testRanges)
@@ -271,5 +271,88 @@ orientBy <- function(testRanges,anchorRanges){
 #   testRanges$overlapsize <- widths
 #   anchorRangesFilt <- anchorRangesFilt[order(elementMetadata(distIndex)$distance,widths),]
   strand(testRanges) <- strand(anchorRangesFilt)
+}
+
+
+GetGRanges <- function(LoadFile,AllChr=NULL,ChrOfInterest=NULL,simple=FALSE,sepr="\t",simplify=FALSE){
+  #    require(Rsamtools)
+  #    require(GenomicRanges)
+  
+  if(class(LoadFile) == "GRanges"){
+    RegionRanges <- LoadFile
+    if(simplify){
+      RegionRanges <- GRanges(seqnames(RegionRanges),ranges(RegionRanges))
+    }
+  }else{
+    if(class(LoadFile) == "character"){
+      RangesTable <- read.delim(LoadFile,sep=sepr,header=TRUE,comment="#")
+    }else if(class(LoadFile) == "matrix"){
+      RangesTable <- as.data.frame(LoadFile)
+    } else{
+      RangesTable <- as.data.frame(LoadFile)
+    }
+    Chromosomes <- as.vector(RangesTable[,1])
+    Start <- as.numeric(as.vector(RangesTable[,2]))
+    End <- as.numeric(as.vector(RangesTable[,3]))
+    RegionRanges <- GRanges(seqnames=Chromosomes,ranges=IRanges(start=Start,end=End))
+    if(simple == FALSE){
+      if(ncol(RangesTable) > 4){
+        ID <- as.vector(RangesTable[,4])
+        Score <- as.vector(RangesTable[,5])
+        if(ncol(RangesTable) > 6){
+          Strand <- rep("*",nrow(RangesTable))
+          RemainderColumn <- as.data.frame(RangesTable[,-c(1:6)])
+          elementMetadata(RegionRanges) <- cbind(ID,Score,Strand,RemainderColumn)
+        }else{
+          elementMetadata(RegionRanges) <- cbind(ID,Score)
+        }
+      }
+    }
+  }
+  if(!is.null(AllChr)){ 
+    RegionRanges <- RegionRanges[seqnames(RegionRanges) %in% AllChr]    
+    seqlevels(RegionRanges,force=TRUE) <- AllChr
+  }
+  if(!is.null(ChrOfInterest)){      
+    RegionRanges <- RegionRanges[seqnames(RegionRanges) == ChrOfInterest]      
+  }
+  
+  return(RegionRanges)
+}
+
+findCovMaxPos <- function(reads,bedRanges,ChrOfInterest,FragmentLength){
+  #    require(GenomicRanges)
+  #    require(Rsamtools)
+  
+  cat("done\n")
+  cat("Calculating coverage\n")
+  MaxRanges <- GRanges()
+  if(length(reads) > 0){
+    seqlengths(reads)[names(ChrOfInterest)] <- ChrOfInterest
+    AllCov <- coverage(reads) 
+    cat("Calculating Summits on ",names(ChrOfInterest)," ..")
+    covPerPeak <- Views(AllCov[[which(names(AllCov) %in% names(ChrOfInterest))]],ranges(bedRanges[seqnames(bedRanges) == names(ChrOfInterest)]))
+    meanSummitLocations <- viewApply(covPerPeak,function(x)round(mean(which(x==max(x)))))
+    Maxes <- (start(bedRanges)+meanSummitLocations)-1
+    if(any(is.na(Maxes))){ 
+      NoSummitRanges <- bedRanges[is.na(Maxes)]
+      Maxes[is.na(Maxes)]  <- (start((ranges(NoSummitRanges[seqnames(NoSummitRanges) == names(ChrOfInterest)])))+end((ranges(NoSummitRanges[seqnames(NoSummitRanges) == names(ChrOfInterest)]))))/2
+    }
+    MaxRanges <- GRanges(seqnames(bedRanges[seqnames(bedRanges) == names(ChrOfInterest)]),IRanges(start=Maxes,end=Maxes),elementMetadata=elementMetadata(bedRanges[seqnames(bedRanges) == names(ChrOfInterest)]))
+    #revAllCov <- rev(coverage(reads))
+    #revAllCov <- runmean(revAllCov[names(revAllCov) %in% ChrOfInterest],20)
+    #cat("Calculating reverse Summits on ",ChrOfInterest," ..")
+    #revMaxes <- which.max(Views(revAllCov[[which(names(revAllCov) %in% ChrOfInterest)]],ranges(bedRanges[seqnames(bedRanges) == ChrOfInterest])))
+    #if(any(is.na(revMaxes))){ 
+    #  revNoSummitRanges <- bedRanges[is.na(revMaxes)]
+    #  revMaxes[is.na(revMaxes)]  <- (start((ranges(revNoSummitRanges[seqnames(revNoSummitRanges) == ChrOfInterest])))+end((ranges(revNoSummitRanges[seqnames(revNoSummitRanges) == ChrOfInterest]))))/2
+    #}
+    #revMaxRanges <- GRanges(seqnames(bedRanges[seqnames(bedRanges) == ChrOfInterest]),IRanges(start=Maxes,end=Maxes),elementMetadata=elementMetadata(bedRanges[seqnames(bedRanges) == ChrOfInterest]))
+    #meanMaxes <- rowMeans(cbind(Maxes,revMaxes))
+    #meanMaxRanges <- GRanges(seqnames(bedRanges[seqnames(bedRanges) == ChrOfInterest]),IRanges(start=meanMaxes,end=meanMaxes),elementMetadata=elementMetadata(bedRanges[seqnames(bedRanges) == ChrOfInterest]))
+    #cat(".done\n")
+  }
+  #return(meanMaxRanges)
+  return(MaxRanges)
 }
 

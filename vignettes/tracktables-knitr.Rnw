@@ -29,7 +29,14 @@ library("tracktables")
 \title{Visualising ChIP-seq data -- tracktables}
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
+
+<<include=FALSE>>=
+library(knitr)
+opts_chunk$set(
+concordance=TRUE
+)
+@
+
 
 \maketitle
 
@@ -58,7 +65,7 @@ The first set of functions deal with creating IGV sessions XMLs, sample informat
 
 In this quick start we will look at building a simple HTML page of a ChIP-seq IGV session.
 
-<<quick1, fig=TRUE, include=TRUE, width=9, height=6 >>=
+<<quick1, include=TRUE, fig.width=9, fig.height=6 >>=
 data(chipExampleBig)
 plotRegion(chipExampleBig)
 @

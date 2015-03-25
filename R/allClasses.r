@@ -96,7 +96,22 @@ setGeneric("normaliseQuantiles", function(object="ChIPprofile") standardGeneric(
 #' @export
 setMethod("normaliseQuantiles", signature(object="ChIPprofile"), normaliseQuantiles.ChIPprofile)
 
+
 #' Join, subset and manipulate ChIPprofile objects
+#' @rdname manipulateObjects
+#' @export
+setMethod("c", "ChIPprofile",
+          function (x,...)
+          {
+            assayList <- lapply(list(x,...),function(x)assays(x)[[1]])
+            subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(x))
+            exptData(subsetProfile)$names <- unlist(lapply(list(x,...),function(x)exptData(x)$name))
+            exptData(subsetProfile)$AlignedReadsInBam <- unlist(lapply(list(x,...),function(x)exptData(x)$AlignedReadsInBam))
+            return(new("ChIPprofile",subsetProfile,params=x@params))
+            
+          }
+)
+
 #' @rdname manipulateObjects
 #' @export
 setMethod("rbind", "ChIPprofile",
@@ -275,6 +290,7 @@ setMethod("log", "ChIPprofile",
           }
 )
 
+
 zeroToMin <- function(x){
   for(r in 1:nrow(x)){
     print(r)
@@ -371,3 +387,17 @@ setGeneric("normalise", function(object="ChIPprofile",method="rpm",normFactors=N
 #' @export
 setMethod("normalise", signature(object="ChIPprofile",method="character",normFactors="numeric"), normalise.ChIPprofile)
 
+#' Example ChIPprofiles
+#'
+#' This dataset contains peaks from an in-house EBF1 ChIP-seq 
+#'
+#' \itemize{
+#' \item ChIPprofiles
+#' }
+#'
+#' @docType data
+#' @keywords datasets
+#' @name chipExampleBig
+#' @usage data(chipExampleBig)
+#' @return A ChIPprofile object with two rows
+NULL

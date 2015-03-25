@@ -122,9 +122,60 @@ names(tom) <- c("ha","endo")
 
 dnase <- regionPlot("/Users/tcarroll//Downloads/DNAseDupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
 pol2 <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/RNAPol2DupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
+geneToUse <- rowData(pol2[order(rowSums(assays(pol2)[[1]][,75:125]),decreasing=T)])
+
 pol2ser <- regionPlot("/Users/tcarroll/Downloads/RNAPol2ser2DupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
 h3k4me3 <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K4me3_IkNegDupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
 h3k9ac <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K9ac_IkNegDupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
+
+geneToUse
+pol2_H <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/RNAPol2DupMarkedNormalised.bw",geneToUse[1000:1200],samplename = "highPol",style="percentOfRegion",format="bigwig",distanceAround = 100)
+pol2_M <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/RNAPol2DupMarkedNormalised.bw",geneToUse[5000:5200],samplename = "midPol",style="percentOfRegion",format="bigwig",distanceAround = 100)
+pol2s_H <- regionPlot("/Users/tcarroll/Downloads/RNAPol2ser2DupMarkedNormalised.bw",geneToUse[1000:1200],samplename = "highPols",style="percentOfRegion",format="bigwig",distanceAround = 100)
+pol2s_M <- regionPlot("/Users/tcarroll/Downloads/RNAPol2ser2DupMarkedNormalised.bw",geneToUse[5000:5200],samplename = "midPols",style="percentOfRegion",format="bigwig",distanceAround = 100)
+h3k4me3_H <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K4me3_IkNegDupMarkedNormalised.bw",geneToUse[1000:1200],samplename = "highk4me3",style="percentOfRegion",format="bigwig",distanceAround = 100)
+h3k4me3_M <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K4me3_IkNegDupMarkedNormalised.bw",geneToUse[5000:5200],samplename = "midk4me3",style="percentOfRegion",format="bigwig",distanceAround = 100)
+h3k9ac_H <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K9ac_IkNegDupMarkedNormalised.bw",geneToUse[1000:1200],samplename = "highk9ac",style="percentOfRegion",format="bigwig",distanceAround = 100)
+h3k9ac_M <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K9ac_IkNegDupMarkedNormalised.bw",geneToUse[5000:5200],samplename = "midk9ac",style="percentOfRegion",format="bigwig",distanceAround = 100)
+dnase_H <- regionPlot("/Users/tcarroll/Downloads/DNAseDupMarkedNormalised.bw",geneToUse[1000:1200],samplename = "highdnase",style="percentOfRegion",format="bigwig",distanceAround = 100)
+dnase_M <- regionPlot("/Users/tcarroll/Downloads/DNAseDupMarkedNormalised.bw",geneToUse[5000:5200],samplename = "middnase",style="percentOfRegion",format="bigwig",distanceAround = 100)
+
+pol2s_H <- regionPlot("/Users/tcarroll/Downloads/RNAPol2ser2DupMarkedNormalised.bw",geneToUse[1000:1200],samplename = "highPolser",style="percentOfRegion",format="bigwig",distanceAround = 100)
+pol2s_M <- regionPlot("/Users/tcarroll/Downloads/RNAPol2ser2DupMarkedNormalised.bw",geneToUse[5000:5200],samplename = "midPolser",style="percentOfRegion",format="bigwig",distanceAround = 100)
+dnase_H <- regionPlot("/Users/tcarroll/Downloads/DNAseDupMarkedNormalised.bw",geneToUse[1000:1200],samplename = "highdnase",style="percentOfRegion",format="bigwig",distanceAround = 100)
+dnase_M <- regionPlot("/Users/tcarroll/Downloads/DNAseDupMarkedNormalised.bw",geneToUse[5000:5200],samplename = "middnase",style="percentOfRegion",format="bigwig",distanceAround = 100)
+
+pol <- c(pol2_H,pol2_M,h3k4me3_H,h3k4me3_M,h3k9ac_H,h3k9ac_M)
+chipExampleBig <- c(dnase_H,dnase_M,pol2s_H,pol2s_M,pol2_H,pol2_M,h3k4me3_H,h3k4me3_M,h3k9ac_H,h3k9ac_M)
+pol2ser <- regionPlot("/Users/tcarroll/Downloads/RNAPol2ser2DupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
+h3k4me3 <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K4me3_IkNegDupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
+h3k9ac <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K9ac_IkNegDupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
+
+#library(soGGi)
+library(GenomicRanges)
+mm9Genes <- read.delim("/Users/tcarroll/Downloads/mm9Genes_May2012.txt",sep="\t",h=T)
+
+mm9GeneRanges <- GRanges(seqnames=paste0("chr",mm9Genes[,3]),ranges=IRanges(start=mm9Genes[,1],end=mm9Genes[,2]),strand=mm9Genes[,4],name=mm9Genes[,5],biotype=mm9Genes[,6])
+JustChrOfInterest <- unique(as.vector(seqnames(mm9GeneRanges)))[grep("chr\\d.|chr\\d|chrX|chrY|chrM",unique(as.vector(seqnames(mm9GeneRanges))))]
+mm9PC <- mm9GeneRanges[mm9GeneRanges$biotype == "protein_coding"]
+mm9PC <- mm9PC[order(width(mm9PC),decreasing=T)]
+mm9PC <- mm9PC[match(unique(mm9PC$name),mm9PC$name)]
+mm9PC <- mm9PC[!mm9PC$name == ""]
+mm9PC <- mm9PC[seqnames(mm9PC) %in% JustChrOfInterest]
+mm9PC$Feature <- rep("Gene",length(mm9PC))
+
+pol2 <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/RNAPol2DupMarkedNormalised.bw",mm9PCTest,style="percentOfRegion",format="bigwig",distanceAround = 100)
+geneToUse <- rowData(pol2[order(rowSums(assays(pol2)[[1]][,75:125]),decreasing=T)])
+pol2_H <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/RNAPol2DupMarkedNormalised.bw",geneToUse[1000:1200],samplename = "highPol",style="percentOfRegion",format="bigwig",distanceAround = 100)
+pol2_M <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/RNAPol2DupMarkedNormalised.bw",geneToUse[5000:5200],samplename = "midPol",style="percentOfRegion",format="bigwig",distanceAround = 100)
+pol2s_H <- regionPlot("/Users/tcarroll/Downloads/RNAPol2ser2DupMarkedNormalised.bw",geneToUse[1000:1200],samplename = "highPols",style="percentOfRegion",format="bigwig",distanceAround = 100)
+pol2s_M <- regionPlot("/Users/tcarroll/Downloads/RNAPol2ser2DupMarkedNormalised.bw",geneToUse[5000:5200],samplename = "midPols",style="percentOfRegion",format="bigwig",distanceAround = 100)
+h3k4me3_H <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K4me3_IkNegDupMarkedNormalised.bw",geneToUse[1000:1200],samplename = "highk4me3",style="percentOfRegion",format="bigwig",distanceAround = 100)
+h3k4me3_M <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K4me3_IkNegDupMarkedNormalised.bw",geneToUse[5000:5200],samplename = "midk4me3",style="percentOfRegion",format="bigwig",distanceAround = 100)
+h3k9ac_H <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K9ac_IkNegDupMarkedNormalised.bw",geneToUse[1000:1200],samplename = "highk9ac",style="percentOfRegion",format="bigwig",distanceAround = 100)
+h3k9ac_M <- regionPlot("/Users/tcarroll/Downloads/randomTracks-2/H3K9ac_IkNegDupMarkedNormalised.bw",geneToUse[5000:5200],samplename = "midk9ac",style="percentOfRegion",format="bigwig",distanceAround = 100)
+dnase_H <- regionPlot("/Users/tcarroll/Downloads/DNAseDupMarkedNormalised.bw",geneToUse[1000:1200],samplename = "highdnase",style="percentOfRegion",format="bigwig",distanceAround = 100)
+dnase_M <- regionPlot("/Users/tcarroll/Downloads/DNAseDupMarkedNormalised.bw",geneToUse[5000:5200],samplename = "middnase",style="percentOfRegion",format="bigwig",distanceAround = 100)
 
 tom <- c(dnase,pol2,pol2ser,h3k4me3,h3k9ac)
 tom <- log2(zeroToMin2(tom))
