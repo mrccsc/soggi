@@ -576,7 +576,7 @@ The output from \Rfunction{groupByOverlaps()} can then be used to subset precomp
 \begin{alltt}
 \hlstd{log2Ik_Profiles} \hlkwb{<-} \hlkwd{log2}\hlstd{(ik_Profiles)}
 \hlkwd{plotRegion}\hlstd{(log2Ik_Profiles,}\hlkwc{outliers}\hlstd{=}\hlnum{0.01}\hlstd{,}\hlkwc{gts}\hlstd{=peakSetCombinations,} \hlkwc{groupBy}\hlstd{=}\hlstr{"Group"}\hlstd{,}\hlkwc{colourBy}\hlstd{=}\hlstr{"Sample"}\hlstd{,} \hlkwc{freeScale}\hlstd{=}\hlnum{TRUE}\hlstd{)}
-\hlkwd{plotRegion}\hlstd{(log2Ik_Profiles[[}\hlnum{1}\hlstd{]]} \hlopt{-} \hlstd{log2Ik_Profiles[[}\hlnum{2}\hlstd{]] ,}\hlkwc{outliers}\hlstd{=}\hlnum{0.01}\hlstd{,}\hlkwc{gts}\hlstd{=peakSetCombinations,} \hlkwc{groupBy}\hlstd{=}\hlstr{"Group"}\hlstd{,} \hlkwc{colourBy}\hlstd{=}\hlstr{"Sample"}\hlstd{,} \hlkwc{freeScale}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+\hlkwd{plotRegion}\hlstd{(log2Ik_Profiles[[}\hlnum{1}\hlstd{]]} \hlopt{-} \hlstd{log2Ik_Profiles[[}\hlnum{2}\hlstd{]] ,}\hlkwc{outliers}\hlstd{=}\hlnum{0.01}\hlstd{,}\hlkwc{gts}\hlstd{=peakSetCombinations,} \hlkwc{groupBy}\hlstd{=}\hlstr{"Group"}\hlstd{,} \hlkwc{colourBy}\hlstd{=}\hlstr{"Sample"}\hlstd{,} \hlkwc{freeScale}\hlstd{=}\hlnum{FALSE}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -606,7 +606,39 @@ This confirms that common and unique peaksets have different levels of the separ
 \end{figure}
 
 
+\newpage
 
-\bibliography{library}
+
+
+\begin{kframe}
+\begin{alltt}
+\hlkwd{toLatex}\hlstd{(}\hlkwd{sessionInfo}\hlstd{())}
+\end{alltt}
+\end{kframe}\begin{itemize}\raggedright
+  \item R version 3.1.3 (2015-03-09), \verb|x86_64-apple-darwin13.4.0|
+  \item Locale: \verb|en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8|
+  \item Base packages: base, datasets, graphics, grDevices, methods,
+    parallel, stats, utils
+  \item Other packages: BiocGenerics~0.10.0, BiocParallel~0.6.1,
+    Biostrings~2.32.1, BSgenome~1.32.0, chipseq~1.14.0,
+    GenomeInfoDb~1.0.2, GenomicAlignments~1.0.5, GenomicRanges~1.16.4,
+    ggplot2~1.0.0, IRanges~1.22.10, knitr~1.7, preprocessCore~1.26.1,
+    reshape2~1.4, roxygen2~4.0.1, Rsamtools~1.16.1, rtracklayer~1.24.2,
+    ShortRead~1.22.0, soGGi~0.99.0, XVector~0.4.0
+  \item Loaded via a namespace (and not attached):
+    AnnotationDbi~1.26.0, BatchJobs~1.3, BBmisc~1.7, Biobase~2.24.0,
+    BiocCheck~1.1.16, BiocInstaller~1.14.3, BiocStyle~1.2.0,
+    biocViews~1.32.1, bitops~1.0-6, brew~1.0-6, checkmate~1.2,
+    codetools~0.2-10, colorspace~1.2-4, DBI~0.3.1, devtools~1.6.1,
+    digest~0.6.4, evaluate~0.5.5, fail~1.2, foreach~1.4.2, formatR~1.0,
+    getopt~1.20.0, graph~1.42.0, grid~3.1.3, gtable~0.1.2, highr~0.3,
+    httr~0.5, hwriter~1.3, iterators~1.0.7, labeling~0.3,
+    lattice~0.20-30, latticeExtra~0.6-26, MASS~7.3-39, munsell~0.4.2,
+    optparse~1.2.0, plyr~1.8.1, proto~0.3-10, RBGL~1.40.0,
+    RColorBrewer~1.0-5, Rcpp~0.11.2, RCurl~1.95-4.3, RSQLite~0.11.4,
+    RUnit~0.4.26, scales~0.2.4, sendmailR~1.1-2, stats4~3.1.3,
+    stringr~0.6.2, tools~3.1.3, XML~3.98-1.1, zlibbioc~1.10.0
+\end{itemize}
+
 
 \end{document}

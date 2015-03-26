@@ -471,3 +471,18 @@ NULL
 #' @usage data(pwmCov)
 #' @return A rlelist of motif coverage
 NULL
+
+#' A single GRange
+#'
+#' This dataset contains an rlelist of motif coverage
+#'
+#' \itemize{
+#' \item singleGRange
+#' }
+#'
+#' @docType data
+#' @keywords datasets
+#' @name singleGRange
+#' @usage data(singleGRange)
+#' @return A single GRanges used in motif coverage example/
+NULL

@@ -18,7 +18,8 @@
 #' @return  A RLElist of motif density per base pair to be used as input to main soggi function.
 #' @examples 
 #' data(pwmCov)
-#' regionPlot(pwmCov,GRanges("chrM",IRanges(0,200)) ,format="rlelist")
+#' data(singleGRange)
+#' regionPlot(pwmCov,singleGRange ,format="rlelist")
 #' 
 #' @export
 pwmToCoverage <- function(pwm,genome,min="70%",removeRand=FALSE,chrsOfInterest=NULL){

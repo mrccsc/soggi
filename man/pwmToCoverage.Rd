@@ -41,7 +41,8 @@ Motif score as an RLElist
 }
 \examples{
 data(pwmCov)
-regionPlot(pwmCov,GRanges("chrM",IRanges(0,200)) ,format="rlelist")
+data(singleGRange)
+regionPlot(pwmCov,singleGRange ,format="rlelist")
 }
 \author{
 Thomas Carroll

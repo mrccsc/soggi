@@ -308,7 +308,7 @@ The \Rfunction{findconsensusRegions()} and \Rfunction{summitPipeline()} function
 
 In this example, two antibodies for the transcription factor Ikaros are used to plot the signal over common and unique peaks for each antibody. First the peaks sets are defined using \Rfunction{groupByOverlaps()}
 
-<<quick8, eval=TRUE , fig.width=10, fig.height=6>>=
+<<quick8, eval=TRUE , fig.width=10, fig.height=5>>=
 data(ik_Example)
 ik_Example
 peakSetCombinations <- groupByOverlaps(ik_Example)
@@ -319,12 +319,12 @@ peakSetCombinations
 The output from \Rfunction{groupByOverlaps()} can then be used to subset precomputed profiles of HA and Endogenous ChIP signal. Here we apply a log2 transformation to the data before plotting and cleaning up profile with windsorisation
 
 
-<<quick10, eval=TRUE , fig.width=10, fig.height=6>>=
+<<quick10, eval=TRUE , fig.width=10, fig.height=5>>=
 data(ik_Profiles)
 ik_Profiles
 log2Ik_Profiles <- log2(ik_Profiles)
 plotRegion(log2Ik_Profiles,outliers=0.01,gts=peakSetCombinations, groupBy="Group",colourBy="Sample", freeScale=TRUE)
-plotRegion(log2Ik_Profiles[[1]] - log2Ik_Profiles[[2]] ,outliers=0.01,gts=peakSetCombinations, groupBy="Group", colourBy="Sample", freeScale=TRUE)
+plotRegion(log2Ik_Profiles[[1]] - log2Ik_Profiles[[2]] ,outliers=0.01,gts=peakSetCombinations, groupBy="Group", colourBy="Sample", freeScale=FALSE)
 
 @
 
@@ -353,7 +353,12 @@ This confirms that common and unique peaksets have different levels of the separ
 \end{figure}
 
 
+\newpage
 
-\bibliography{library}
+
+
+<<sessionInfo, results='asis', eval=TRUE>>=
+toLatex(sessionInfo())
+@
 
 \end{document}
