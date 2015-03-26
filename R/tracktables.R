@@ -3,7 +3,7 @@
 #' @name soggi
 #' @rdname ChIPprofile
 #' @export
-#' @import BiocGenerics BiocParallel Biostrings GenomicAlignments GenomicRanges ggplot2 IRanges methods preprocessCore QuasR reshape2 Rsamtools rtracklayer chipseq
+#' @import BiocGenerics BiocParallel Biostrings GenomicAlignments GenomicRanges ggplot2 IRanges methods preprocessCore reshape2 Rsamtools rtracklayer chipseq
 #' @include allClasses.r plots.R peakTransforms.r
 regionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceUp=1500,distanceDown=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=FALSE,normalize="RPM",plotBy="coverage",removeDup=FALSE,verbose=TRUE,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80,downSample=NULL,minFragmentLength=NULL,maxFragmentLength=NULL){
   if(!verbose){
@@ -227,8 +227,9 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
   ## if format is bam read in bamfile.
   if(format == "bam"){
     message("Reading tags from ",bamFile,appendLF=FALSE)
-    totalReads <- alignmentStats(bamFile)[,"mapped"]
-    
+    #totalReads <- alignmentStats(bamFile)[,"mapped"]
+    # QuasR is breaking builds so for now relies on USER input
+    totalReads <- 10^6
   ##  if data is single end reads then import reads and reset reads to fragment length.
   ##  Calculate fragment length from cross-coverage if not provided
   
