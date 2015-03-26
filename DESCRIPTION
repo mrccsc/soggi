@@ -32,5 +32,8 @@ Collate:
     'peakTransforms.r'
     'plots.R'
     'tracktables.R'
+VignetteBuilder: knitr
 Suggests:
-    testthat
+    testthat,
+    BiocStyle,
+    knitr
