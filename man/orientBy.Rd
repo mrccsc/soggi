@@ -12,11 +12,13 @@ orientBy(testRanges, anchorRanges)
 }
 \value{
 newRanges A GRanges object.
-data(ik_Example)
-strand(ik_Example[[1]]) <- "+"
-anchoredGRanges <- orientBy(ik_Example[[2]],ik_Example[[1]])
 }
 \description{
 Set strand by overlapping or nearest anchor GRanges
+}
+\examples{
+data(ik_Example)
+strand(ik_Example[[1]]) <- "+"
+anchoredGRanges <- orientBy(ik_Example[[2]],ik_Example[[1]])
 }
 

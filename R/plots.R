@@ -232,7 +232,7 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
   }
   if(object@params$style=="point"){
     P <- P + scale_x_continuous(breaks=c(1,object@params$distanceAround+1,object@params$distanceAround+1+object@params$distanceAround),
-                              labels=c("Centre-1500","Centre","Centre+1500"))+
+                              labels=c(paste0("Centre-",object@params$distanceAround),"Centre",paste0("Centre+",object@params$distanceAround)))+
       theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=12))
   }
   if(object@params$style=="percentOfRegion"){
