@@ -1,9 +1,0 @@
-How should i be using coldata..or rowData
-bigmemory
-orientBy
-display percentage in (and +- 1std percentage)
-colData carries metadata ..supplied in metadata argument.
-
-cqn method
-
-optimse pasting of columns together

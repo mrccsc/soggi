@@ -13,8 +13,15 @@
 \arguments{
 \item{object}{A ChIPprofile object}
 }
+\value{
+A ChIPprofile object containing normalised data
+}
 \description{
 Quantile normalisation across bins/regions.
+}
+\examples{
+data(chipExampleBig)
+normaliseQuantiles(chipExampleBig)
 }
 \author{
 Thomas Carroll

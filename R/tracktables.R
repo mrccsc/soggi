@@ -3,9 +3,9 @@
 #' @name soggi
 #' @rdname ChIPprofile
 #' @export
-#' @import IRanges GenomicRanges ggplot2 QuasR rtracklayer GenomicAlignments GenomicRanges XVector Rsamtools reshape2 Biostrings tractor.base stringr XML preprocessCore chipseq caTools ChIPQC BiocGenerics methods
+#' @import BiocGenerics BiocParallel Biostrings GenomicAlignments GenomicRanges ggplot2 IRanges methods preprocessCore QuasR reshape2 Rsamtools rtracklayer chipseq
 #' @include allClasses.r plots.R peakTransforms.r
-regionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceUp=1500,distanceDown=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,verbose=T,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80,downSample=NULL,minFragmentLength=NULL,maxFragmentLength=NULL){
+regionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceUp=1500,distanceDown=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=FALSE,normalize="RPM",plotBy="coverage",removeDup=FALSE,verbose=TRUE,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80,downSample=NULL,minFragmentLength=NULL,maxFragmentLength=NULL){
   if(!verbose){
     suppressMessages(runRegionPlot())
   }
@@ -13,7 +13,7 @@ regionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Fragmen
   return(result)  
 }
 
-runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceUp=1500,distanceDown=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=F,normalize="RPM",plotBy="coverage",removeDup=F,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80,downSample=NULL,minFragmentLength=NULL,maxFragmentLength=NULL){
+runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,FragmentLength=150,style="point",distanceAround=1500,distanceUp=1500,distanceDown=1500,distanceInRegionStart=1500,distanceOutRegionStart=1500,distanceInRegionEnd=1500,distanceOutRegionEnd=1500,paired=FALSE,normalize="RPM",plotBy="coverage",removeDup=FALSE,format="bam",seqlengths=NULL,forceFragment=NULL,method="bin",genome=NULL,cutoff=80,downSample=NULL,minFragmentLength=NULL,maxFragmentLength=NULL){
 
   #bamFile <- "/home//pgellert/Dropbox (Lymphocyte_Developme)/WeiWeiLiang/RNAPII/Sample_R1-0hDupMarked.bam"
   #bamFile <-"Downloads//mergedETOH.bwRange5.bw"
@@ -57,7 +57,7 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
     PosRegionMat <- NULL
     NegRegionMat <- NULL
     RegionsMat <- NULL    
-    maxDistance=distanceAround
+    maxDistance <- distanceAround
     distanceUpStart <- distanceUp
     distanceDownEnd <- distanceDown    
   }
@@ -240,7 +240,7 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
         FragmentLength <- getShifts(total,lengths,shiftWindowStart=1,shiftWindowEnd=400)
       }
       
-      message("Extending reads to fragmentlength of ",FragmentLength,appendLF=F)
+      message("Extending reads to fragmentlength of ",FragmentLength,appendLF=FALSE)
       temp <- resize(as(total,"GRanges"),FragmentLength,"start")
       message("..done")
     }
@@ -650,18 +650,18 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
       
       meansPos <- matrix(meansListPos,
                              ncol=((nOfWindows*((distanceAround)/100))*2)+nOfWindows
-                             ,byrow=T)
+                             ,byrow=TRUE)
       if(nrow(meansPos) > 0){
       rownames(meansPos) <- matrix(names(meansListPos),ncol=((nOfWindows*((distanceAround)/100))*2)+nOfWindows
-                                       ,byrow=T)[,1]
+                                       ,byrow=TRUE)[,1]
       }
       meansNeg <- matrix(meansListNeg,
                          ncol=((nOfWindows*((distanceAround)/100))*2)+nOfWindows
-                         ,byrow=T)[,(((nOfWindows*((distanceAround)/100))*2)+nOfWindows):1]
+                         ,byrow=TRUE)[,(((nOfWindows*((distanceAround)/100))*2)+nOfWindows):1]
       if(nrow(meansNeg) > 0){
         
       rownames(meansNeg) <- matrix(names(meansListNeg),ncol=((nOfWindows*((distanceAround)/100))*2)+nOfWindows
-                                   ,byrow=T)[,1]
+                                   ,byrow=TRUE)[,1]
       }
       meansMat <- rbind(meansPos,meansNeg)
       profileMat <- meansMat[order(rownames(meansMat)),]
@@ -901,8 +901,8 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
 
     AllRegionStart <- rbind(posRegionStartMat,negRegionStartMat)
     AllRegionEnd <- rbind(posRegionEndMat,negRegionEndMat)
-    meansMat <- matrix(meansList,ncol=nOfWindows,byrow=T)
-    rownames(meansMat) <- matrix(names(meansList),ncol=nOfWindows,byrow=T)[,1]
+    meansMat <- matrix(meansList,ncol=nOfWindows,byrow=TRUE)
+    rownames(meansMat) <- matrix(names(meansList),ncol=nOfWindows,byrow=TRUE)[,1]
     start <- cbind(seq(1,length(colMeans(AllRegionStart))),colMeans(AllRegionStart))
     mid <- cbind(max(start[,1])+seq(1,length(colMeans(meansMat)))*nOfWindows,colMeans(meansMat))
     end <- cbind(max(mid[,1])+seq(1,length(colMeans(AllRegionEnd))),colMeans(AllRegionEnd))

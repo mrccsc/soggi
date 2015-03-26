@@ -9,19 +9,19 @@
 \S4method{plotRegion}{ChIPprofile}(object,
 gts,sampleData,groupData,summariseBy,
 colourBy,lineBy,groupBy,
-plotregion,outliers)
+plotregion,outliers,freeScale)
 
 \S4method{plotRegion}{ChIPprofile}(object = "ChIPprofile", gts = NULL,
   sampleData = NULL, groupData = NULL, summariseBy = NULL,
   colourBy = NULL, lineBy = NULL, groupBy = NULL, plotregion = "full",
-  outliers = NULL)
+  outliers = NULL, freeScale = FALSE)
 }
 \arguments{
 \item{object}{A ChIPprofile object}
 
-\item{gts}{A list of character vectors and GRanges}
+\item{gts}{A list of character vectors or GRangesList}
 
-\item{plotregion}{region to plot}
+\item{plotregion}{region to plot. For combined plots with style "region", may be "start" or "end" to show full resolution of plot of edges.}
 
 \item{groupData}{Dataframe of metadata for groups}
 
@@ -32,7 +32,6 @@ to collapse genomic ranges to summarised profiles.
 summariseBy can not be used injustion with groups specified by gts argument.}
 
 \item{colourBy}{Character vector or formula of either column names from colData(object) containing
-sample metadata Character vector or formula of either column names from colData(object) containing
 sample metadata or character vector "group" to colour by groups in gts}
 
 \item{lineBy}{Character vector or formula of either column names from colData(object) containing
@@ -41,10 +40,20 @@ sample metadata or character vector "group" to set line type by groups in gts}
 \item{groupBy}{Character vector or formula of either column names from colData(object) containing
 sample metadata or character "group" to colour by groups in gts}
 
-\item{outliers}{A numeric vector of length 1 containing proportion to exclude from limits}
+\item{outliers}{A numeric vector of length 1 containing proportion from limits to windsorise.]}
+
+\item{freeScale}{TRUE or FALSE to set whether ggplot 2 facets have their own scales.
+Useful for comparing multiple samples of differing depths without normalisation. Default is FALSE.}
+}
+\value{
+A gg object from ggplot2
 }
 \description{
 A function to plot regions
+}
+\examples{
+data(chipExampleBig)
+plotRegion(chipExampleBig[[2]])
 }
 \author{
 Thomas Carroll

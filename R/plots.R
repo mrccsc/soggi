@@ -6,7 +6,7 @@
 #' \S4method{plotRegion}{ChIPprofile}(object,
 #' gts,sampleData,groupData,summariseBy,
 #' colourBy,lineBy,groupBy,
-#' plotregion,outliers)
+#' plotregion,outliers,freeScale)
 #'
 #'
 #' @docType methods
@@ -17,22 +17,27 @@
 #' @author Thomas Carroll
 #'
 #' @param object A ChIPprofile object 
-#' @param gts A list of character vectors and GRanges
-#' @param plotregion region to plot
+#' @param gts A list of character vectors or GRangesList
+#' @param plotregion region to plot. For combined plots with style "region", may be "start" or "end" to show full resolution of plot of edges.
 #' @param groupData Dataframe of metadata for groups
 #' @param sampleData Dataframe of metadata for sample
 #' @param summariseBy Column names from GRanges elementmetadata. Formula or character vector of column names to use
 #' to collapse genomic ranges to summarised profiles.
 #' summariseBy can not be used injustion with groups specified by gts argument.
 #' @param colourBy Character vector or formula of either column names from colData(object) containing
-#' sample metadata Character vector or formula of either column names from colData(object) containing
 #' sample metadata or character vector "group" to colour by groups in gts
 #' @param lineBy Character vector or formula of either column names from colData(object) containing
 #' sample metadata or character vector "group" to set line type by groups in gts
 #' @param groupBy Character vector or formula of either column names from colData(object) containing
 #' sample metadata or character "group" to colour by groups in gts
-#' @param outliers A numeric vector of length 1 containing proportion to exclude from limits 
-plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NULL,summariseBy=NULL,colourBy=NULL,lineBy=NULL,groupBy=NULL,plotregion="full",outliers=NULL)
+#' @param outliers A numeric vector of length 1 containing proportion from limits to windsorise.]
+#' @param freeScale TRUE or FALSE to set whether ggplot 2 facets have their own scales. 
+#' Useful for comparing multiple samples of differing depths without normalisation. Default is FALSE.
+#' @return  A gg object from ggplot2
+#' @examples
+#' data(chipExampleBig)
+#' plotRegion(chipExampleBig[[2]])
+plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NULL,summariseBy=NULL,colourBy=NULL,lineBy=NULL,groupBy=NULL,plotregion="full",outliers=NULL,freeScale=FALSE)
 {
   
 ## This function can work using two main grouping logics
@@ -114,7 +119,7 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
             ## extract profile matrix
           profileTemp <- assays(object)[[p]]
             
-          mcols(rowData(object))$summariseCol <- apply(as.data.frame(mcols(rowData(object))[,summariseBy,drop=F]) , 1 , paste , collapse = "-" )
+          mcols(rowData(object))$summariseCol <- apply(as.data.frame(mcols(rowData(object))[,summariseBy,drop=FALSE]) , 1 , paste , collapse = "-" )
           gts <- as.list(unique(mcols(rowData(object))$summariseCol))
           summariseBy <- "summariseCol"
           names(gts) <- unlist(gts)
@@ -193,15 +198,15 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
   
   ## Create geom_path plot
   if(!is.null(gts) & !is.null(groupData)){
-    meltedProfileFrame <- merge(meltedProfileFrame,groupData,by.x=2,by.y=1,all.x=T,all.y=F,sort=F)
+    meltedProfileFrame <- merge(meltedProfileFrame,groupData,by.x=2,by.y=1,all.x=TRUE,all.y=FALSE,sort=FALSE)
   }
   if(!is.null(sampleData)){
     sampleNameCol <- which(colnames(meltedProfileFrame) %in% "Sample")
-    meltedProfileFrame <- merge(meltedProfileFrame,sampleData,by.x=sampleNameCol,by.y=1,all.x=T,all.y=F,sort=F)
+    meltedProfileFrame <- merge(meltedProfileFrame,sampleData,by.x=sampleNameCol,by.y=1,all.x=TRUE,all.y=FALSE,sort=FALSE)
   }
   
   P <- ggplot(meltedProfileFrame,
-              aes(x=xIndex,y=Score))+geom_path(alpha = 1,size=1.3)+xlim(0,max(axisIndex))+ylab("Score")+theme(axis.title.y=element_text(angle=0))
+              aes_string(x="xIndex",y="Score"))+geom_path(alpha = 1,size=1.3)+xlim(0,max(axisIndex))+ylab("Score")+theme(axis.title.y=element_text(angle=0))
   
   ## Add scales depending on style and region being plotted
   
@@ -262,7 +267,7 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
     }
     #P <- P+aes(group="group")+aes_string(colour=colourBy,linetype=lineBy)   
   }
-  if(is.null(groupBy)){
+  if(is.null(groupBy) & is.null(colourBy) & is.null(lineBy)){
     groupBy <- "Sample"
   }
 
@@ -276,6 +281,9 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
     
   }
   
+  if(freeScale & !is.null(P$facet)){
+    P$facet$free$y <- TRUE 
+  }
   P <- P+facet+aes_string(colour=colourBy,linetype=lineBy)
   
 
@@ -292,15 +300,13 @@ winsorizeVector <- function(vect,limitlow,limithigh){
   vect[vect > qs[2]] <- qs[2]  
   vect
 }
-setGeneric("plotRegion", function(object="ChIPprofile",gts=NULL,sampleData=NULL,groupData=NULL,summariseBy=NULL,colourBy=NULL,lineBy=NULL,groupBy=NULL,plotregion="character",outliers=NULL) standardGeneric("plotRegion"))
+setGeneric("plotRegion", function(object="ChIPprofile",gts=NULL,sampleData=NULL,groupData=NULL,summariseBy=NULL,colourBy=NULL,lineBy=NULL,groupBy=NULL,plotregion="character",outliers=NULL,freeScale=FALSE) standardGeneric("plotRegion"))
 
 #' @rdname plotRegion
 #' @export
 setMethod("plotRegion", signature(object="ChIPprofile"), plotRegion.ChIPprofile)
 
 subsetProfile <- function(profile,group,granges,summariseColumn){
-  print(summariseColumn)
-  print(colnames(mcols(granges)))
   if(class(group) == "character"){
     if(is.null(summariseColumn)){
       return(profile[rownames(profile) %in% group,])
@@ -308,9 +314,7 @@ subsetProfile <- function(profile,group,granges,summariseColumn){
       return(profile[mcols(granges)[,summariseColumn] %in% group,])
     }
   }
-  if(class(group) == "GRanges"){
-    print(granges %over% group)      
-    print(profile[granges %over% group,])          
+  if(class(group) == "GRanges"){         
     return(profile[granges %over% group,])
   }
 }

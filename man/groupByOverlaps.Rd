@@ -14,4 +14,8 @@ groupedGRanges A named GRangesList object.
 \description{
 Create GRangeslist from all combinations of GRanges
 }
+\examples{
+data(ik_Example)
+ gts <- groupByOverlaps(ik_Example)
+}
 

@@ -66,7 +66,15 @@
     of the object.
   }
 }
+\value{
+A ChIPprofile object
+}
 \description{
 Join, subset and manipulate ChIPprofile objects
+}
+\examples{
+data(chipExampleBig)
+x <- c(chipExampleBig[[1]],chipExampleBig[[2]])
+y <- rbind(chipExampleBig[[1]],chipExampleBig[[2]])
 }
 

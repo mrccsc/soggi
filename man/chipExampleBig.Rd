@@ -7,10 +7,10 @@
 data(chipExampleBig)
 }
 \value{
-A ChIPprofile object with two rows
+A ChIPprofile object
 }
 \description{
-This dataset contains peaks from an in-house EBF1 ChIP-seq
+This dataset contains peaks from ChIP-signal over genes
 }
 \details{
 \itemize{

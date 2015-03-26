@@ -7,12 +7,12 @@
 #' @references See \url{http://bioinformatics.csc.mrc.ac.uk} for more details on soGGi workflows
 #' @rdname ChIPprofile
 #' @docType class
-#' @param bamFile Character vector for location of BAM file.
-#' @param testRanges GRanges object of regions to plot.
+#' @param bamFile Character vector for location of BAM file or bigWig, an rleList or PWM matrix.
+#' @param testRanges GRanges object or character vector of BED file location of regions to plot.
 #' @param samplename Character vector of sample name. Default is NULL.
 #' @param nOfWindows Number of windows to bin regions into for coverage calculations (Default 100)
 #' @param FragmentLength Integer vector Predicted or expected fragment length.
-#' @param style Point or region (see details)
+#' @param style "Point" for per base pair plot, "percentOfRegion" for normalised length and "region" for combined plot
 #' @param distanceAround Distance around centre of region to be used for plotting
 #' @param distanceUp Distance upstream from centre of region to be used for plotting
 #' @param distanceDown Distance downstream from centre of region to be used for plotting
@@ -33,19 +33,22 @@
 #' @param plotBy Score to be used for plotting. Presently only coverage.
 #' @param removeDup Remove duplicates before calculating coverage.
 #' @param verbose TRUE or FALSE
-#' @param format BAM or BigWig
+#' @param format character vector of "BAM", "BigWig", "RleList" or "PWM"
 #' @param seqlengths Chromosomes to be used. If missing will report all.
 #' @param forceFragment Centre fragment and force consistent fragment width.
 #' @param method Character vector of value "bp","bin" or "spline". 
 #' The bin method divides a region of interest into equal sized bins of number specified in nOfWindows.
 #' Coverage or counts are then summarised within these windows.
 #' The spline method creates a spline with the number of spline points as specified in nOfWindows argument.
-#' @param downSample Down sample GRanges or bamFile to this proportion of orginal.
+#' @param downSample Down sample BAM reads to this proportion of orginal.
 #' @param genome BSGenome object to be used when using PWM input.
 #' @param cutoff Cut-off for idnetifying motifs when using PWM input.
 #' @param minFragmentLength Remove fragments smaller than this.
 #' @param maxFragmentLength Remove fragments larger than this. 
 #' @return ChIPprofile A ChIPprofile object. 
+#' @examples
+#' data(chipExampleBig)
+#' chipExampleBig
 #' @export
 setClass("ChIPprofile",contains = "SummarizedExperiment",
          slots=c(params="list"
@@ -65,9 +68,12 @@ setClass("ChIPprofile",contains = "SummarizedExperiment",
 #' @aliases normaliseQuantiles normaliseQuantiles,ChIPprofile-method
 #' 
 #' @author Thomas Carroll
-#'
+#' @examples
+#' data(chipExampleBig)
+#' normaliseQuantiles(chipExampleBig)
 #' @export
-#' @param object A ChIPprofile object 
+#' @param object A ChIPprofile object
+#' @return  A ChIPprofile object containing normalised data
 normaliseQuantiles.ChIPprofile <-  function (object)
           {
             
@@ -75,12 +81,11 @@ normaliseQuantiles.ChIPprofile <-  function (object)
             l <- 1
             
             for(j in 1:ncol(object)){
-              print(j)
               tempT[l:(l+nrow(object)-1),] <- normalize.quantiles(tempT[l:(l+nrow(object)-1),])
               l <- l+nrow(object)
             }
             
-            qnormAssays <- lapply(1:ncol(tempT),function(x) matrix(tempT[,x],nrow=nrow(object),byrow = F))
+            qnormAssays <- lapply(1:ncol(tempT),function(x) matrix(tempT[,x],nrow=nrow(object),byrow = FALSE))
             for(c in 1:length(qnormAssays)){
               colnames(qnormAssays[[c]]) <- colnames(assays(object)[[c]])
             }     
@@ -99,6 +104,11 @@ setMethod("normaliseQuantiles", signature(object="ChIPprofile"), normaliseQuanti
 
 #' Join, subset and manipulate ChIPprofile objects
 #' @rdname manipulateObjects
+#' @examples
+#' data(chipExampleBig)
+#' x <- c(chipExampleBig[[1]],chipExampleBig[[2]])
+#' y <- rbind(chipExampleBig[[1]],chipExampleBig[[2]])
+#' @return  A ChIPprofile object
 #' @export
 setMethod("c", "ChIPprofile",
           function (x,...)
@@ -191,6 +201,10 @@ setMethod("$", "ChIPprofile",
 #' @rdname Ops
 #' @param e1 ChIPprofile object
 #' @param e2 ChIPprofile object
+#' @examples
+#' data(chipExampleBig)
+#' chipExampleBig[[1]] + chipExampleBig[[2]]
+#' @return  A ChIPprofile object of result of arithmetic operation.
 #' @export
 setMethod("Ops", signature(e1="ChIPprofile", e2="ChIPprofile"),
           function(e1, e2) {
@@ -199,7 +213,7 @@ setMethod("Ops", signature(e1="ChIPprofile", e2="ChIPprofile"),
               assayList[[i]] <- callGeneric(assays(e1)[[i]],assays(e2)[[i]]) 
             }
             subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(e1))
-            exptData(subsetProfile)$names <- exptData(e1)$names[i]
+            exptData(subsetProfile)$names <- paste0(exptData(e1)$names,".",exptData(e2)$names)
             exptData(subsetProfile)$AlignedReadsInBam <- exptData(e1)$AlignedReadsInBam[i]
             return(new("ChIPprofile",subsetProfile,params=e1@params))                                    
           }
@@ -214,8 +228,8 @@ setMethod("Ops", signature(e1="ChIPprofile", e2="numeric"),
               assayList[[i]] <- callGeneric(assays(e1)[[i]],e2) 
             }
             subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(e1))
-            exptData(subsetProfile)$names <- exptData(e1)$names[i]
-            exptData(subsetProfile)$AlignedReadsInBam <- exptData(e1)$AlignedReadsInBam[i]
+            exptData(subsetProfile)$names <- exptData(e1)$names
+            exptData(subsetProfile)$AlignedReadsInBam <- exptData(e1)$AlignedReadsInBam
             return(new("ChIPprofile",subsetProfile,params=e1@params))                                    
           }
 )
@@ -229,8 +243,8 @@ setMethod("Ops", signature(e1="numeric", e2="ChIPprofile"),
               assayList[[i]] <- callGeneric(e1,assays(e2)[[i]]) 
             }
             subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(e1))
-            exptData(subsetProfile)$names <- exptData(e2)$names[i]
-            exptData(subsetProfile)$AlignedReadsInBam <- exptData(e2)$AlignedReadsInBam[i]
+            exptData(subsetProfile)$names <- exptData(e2)$names
+            exptData(subsetProfile)$AlignedReadsInBam <- exptData(e2)$AlignedReadsInBam
             return(new("ChIPprofile",subsetProfile,params=e2@params))                                    
           }
 )
@@ -242,32 +256,38 @@ setMethod("mean", "ChIPprofile",
             if(missing(...)){
               assayList <- Reduce("+",assays(x))/length(assays(x))
               subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(x))
-              exptData(subsetProfile)$names <- paste0(exptData(x)$name,collapse="&")
+              exptData(subsetProfile)$names <- paste0("MeanOf_",exptData(x)$name,collapse="&")
               exptData(subsetProfile)$AlignedReadsInBam <- exptData(x)$AlignedReadsInBam
               return(new("ChIPprofile",subsetProfile,params=x@params))                                                  
             }else{
               x <- list(x,...)
               assayList <- vector("list",length=length(assays(x[[1]])))
+              nameList <- vector("list",length=length(assays(x[[1]])))
               for(a in 1:length(x[[1]])){
                 listTemp <- vector("list",length=length(x))
+                nameVec <- vector("character")
                 for(r in 1:length(x)){
                   listTemp[[r]] <- assays(x[[r]])[[a]]
+                  nameVec <- c(nameVec,exptData(x[[r]])$names[[a]])
                 }
                 assayList[[a]] <- Reduce("+",listTemp)/length(x)
+                nameList[[a]] <- paste0(nameVec,collapse="&")
+              }
                 subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(x[[1]]))
-                exptData(subsetProfile)$names <- exptData(x[[1]])$names
+                exptData(subsetProfile)$names <- paste0("MeanOf_",unlist(nameList))
                 exptData(subsetProfile)$AlignedReadsInBam <- unlist(lapply(x,function(x)exptData(x)$AlignedReadsInBam))
                 return(new("ChIPprofile",subsetProfile,params=x[[1]]@params))                                                  
                 
               }
             }
-          }
+          
 )
 
 #' @rdname Ops
 #' @export
 setMethod("log2", "ChIPprofile",
           function(x){
+            x <- zeroToMin2(x)
             assayList <- lapply(assays(x),log2)
             subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(x))
             exptData(subsetProfile)$names <- exptData(x)$names
@@ -281,6 +301,7 @@ setMethod("log2", "ChIPprofile",
 #' @export
 setMethod("log", "ChIPprofile",
           function(x,base=exp(1)){
+            x <- zeroToMin2(x)
             assayList <- lapply(assays(x),function(x)log(x,base))
             subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(x))
             exptData(subsetProfile)$names <- exptData(x)$names
@@ -293,7 +314,6 @@ setMethod("log", "ChIPprofile",
 
 zeroToMin <- function(x){
   for(r in 1:nrow(x)){
-    print(r)
     
     temp[r,temp[r,] == 0] <- min(temp[r,temp[r,] != 0])
   }
@@ -306,11 +326,9 @@ zeroToMin2 <- function(x){
     ZeroRows <- rowSums(temp) == 0
     temp[ZeroRows,] <- min(temp[temp != 0])
     for(r in 1:nrow(temp)){
-      print(r)
       temp[r,temp[r,] == 0] <- min(temp[r,temp[r,] != 0])
     }
     for(r in 1:nrow(temp)){
-      print(r)
       temp[r,temp[r,] == 0] <- min(temp[r,temp[r,] != 0])
     }
     assays(x)[[a]] <- temp
@@ -332,11 +350,15 @@ zeroToMin2 <- function(x){
 #' @aliases normalise normalise,ChIPprofile-method
 #' 
 #' @author Thomas Carroll
-#'
 #' @export
 #' @param object A ChIPprofile object 
-#' @param method Normalisation method 
+#' @param method A character vector specifying normalisation method. 
+#' Currently "rpm" for normalising signal for BAM to total reads, 
+#' "quantile" to quantile normalise across samples, 
+#' "signalInRegion" to normalise to proportion of signal within intervals,
+#' "normaliseSample" to normalise across samples and "normaliseRegions" to apply a normalisation across intervals.
 #' @param normFactors A numeric vector used to scale columns or rows.
+#' @return  A ChIPprofile object
 normalise.ChIPprofile <-  function (object,method="rpm",normFactors=NULL)
 {
   
@@ -371,7 +393,7 @@ normalise.ChIPprofile <-  function (object,method="rpm",normFactors=NULL)
   if(method=="signalInRegion"){
     assayList <- assays(object)
     for(k in 1:length(assayList)){
-      assayList[[k]] <- t(t(assayList[[k]])/rowSums(assayList[[k]],na.rm=T))
+      assayList[[k]] <- t(t(assayList[[k]])/rowSums(assayList[[k]],na.rm=TRUE))
     }
     subsetProfile <- SummarizedExperiment(assayList,rowData=rowData(object))
     exptData(subsetProfile)$names <- exptData(object)$names
@@ -384,12 +406,15 @@ normalise.ChIPprofile <-  function (object,method="rpm",normFactors=NULL)
 setGeneric("normalise", function(object="ChIPprofile",method="rpm",normFactors=NULL) standardGeneric("normalise"))
 
 #' @rdname normalise
+#' @examples
+#' data(chipExampleBig)
+#' normalise(chipExampleBig,method="quantile",normFactors=1)
 #' @export
 setMethod("normalise", signature(object="ChIPprofile",method="character",normFactors="numeric"), normalise.ChIPprofile)
 
 #' Example ChIPprofiles
 #'
-#' This dataset contains peaks from an in-house EBF1 ChIP-seq 
+#' This dataset contains peaks from ChIP-signal over genes
 #'
 #' \itemize{
 #' \item ChIPprofiles
@@ -399,5 +424,35 @@ setMethod("normalise", signature(object="ChIPprofile",method="character",normFac
 #' @keywords datasets
 #' @name chipExampleBig
 #' @usage data(chipExampleBig)
-#' @return A ChIPprofile object with two rows
+#' @return A ChIPprofile object
+NULL
+
+#' Example Ikaros signal over peaksets
+#'
+#' This dataset contains signal over peaks from Ikaros ChIP by two antibodies 
+#'
+#' \itemize{
+#' \item ik_Profiles
+#' }
+#'
+#' @docType data
+#' @keywords datasets
+#' @name ik_Profiles
+#' @usage data(ik_Profiles)
+#' @return A ChIPprofile object
+NULL
+
+#' Example Ikaros peaksets
+#'
+#' This dataset contains peaks from Ikaros ChIP by two antibodies 
+#'
+#' \itemize{
+#' \item Ikpeaksets
+#' }
+#'
+#' @docType data
+#' @keywords datasets
+#' @name ik_Example
+#' @usage data(ik_Example)
+#' @return A list containing two GRanges objects
 NULL

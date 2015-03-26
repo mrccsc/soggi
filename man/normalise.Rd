@@ -15,12 +15,23 @@
 \arguments{
 \item{object}{A ChIPprofile object}
 
-\item{method}{Normalisation method}
+\item{method}{A character vector specifying normalisation method.
+Currently "rpm" for normalising signal for BAM to total reads,
+"quantile" to quantile normalise across samples,
+"signalInRegion" to normalise to proportion of signal within intervals,
+"normaliseSample" to normalise across samples and "normaliseRegions" to apply a normalisation across intervals.}
 
 \item{normFactors}{A numeric vector used to scale columns or rows.}
 }
+\value{
+A ChIPprofile object
+}
 \description{
 Various normalisation methods for ChIPprofile objects
+}
+\examples{
+data(chipExampleBig)
+normalise(chipExampleBig,method="quantile",normFactors=1)
 }
 \author{
 Thomas Carroll

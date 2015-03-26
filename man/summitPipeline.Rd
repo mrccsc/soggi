@@ -6,7 +6,7 @@
 summitPipeline(reads, peakfile, fragmentLength, readlength)
 }
 \arguments{
-\item{peakfile}{GRanges of region}
+\item{peakfile}{GRanges of genomic intervals to summit.}
 
 \item{reads}{Character vector of bamFile location or GAlignments object}
 
@@ -15,7 +15,7 @@ summitPipeline(reads, peakfile, fragmentLength, readlength)
 \item{readlength}{Read length of alignments.}
 }
 \value{
-Summits A GRanges object of summits and summmit scores.
+Summits A GRanges object of summits and summit scores.
 }
 \description{
 Returns summits and summmit scores after optional fragment length prediction and read extension

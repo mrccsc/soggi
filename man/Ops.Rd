@@ -33,7 +33,14 @@
 \item{base}{a positive or complex number: the base with respect to which
     logarithms are computed.  Defaults to \eqn{e}=\code{exp(1)}.}
 }
+\value{
+A ChIPprofile object of result of arithmetic operation.
+}
 \description{
 Arithmetic operations
+}
+\examples{
+data(chipExampleBig)
+chipExampleBig[[1]] + chipExampleBig[[2]]
 }
 

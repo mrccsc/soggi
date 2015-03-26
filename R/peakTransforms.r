@@ -8,7 +8,7 @@
 #' @param overlap Type of overlap to consider for finding consensus sites
 #' @param fragmentLength Predicted fragment length. Set to NULL to auto-calculate
 #' @param NonPrimaryPeaks A list of parameters to deal with non primary peaks in consensus regions.
-#' @return Consensus A GRanges object of consensus summits. 
+#' @return Consensus A GRanges object of consensus regions with consensus summits. 
 #' @export
 findconsensusRegions <- function(testRanges,bamFiles=NULL,method="majority",summit="mean",resizepeak="asw",overlap="any",fragmentLength=NULL,
                                  NonPrimaryPeaks=list(withinsample="drop",betweensample="mean")){
@@ -71,18 +71,18 @@ dropNonPrimary <- function(x,consensusRanges,id="elementMetadata.ID",score="summ
   mat <- as.matrix(findOverlaps(consensusRanges,x))
   tempConsensusRanges <- consensusRanges[mat[,1],]
   elementMetadata(tempConsensusRanges) <- elementMetadata(x[mat[,2]])[,c(id,score)]
-  tempConsensusRanges <- tempConsensusRanges[order(elementMetadata(tempConsensusRanges)[,score],decreasing=T),]  
+  tempConsensusRanges <- tempConsensusRanges[order(elementMetadata(tempConsensusRanges)[,score],decreasing=TRUE),]  
   primaryIDs <- elementMetadata(tempConsensusRanges[match(unique(tempConsensusRanges[,id]),tempConsensusRanges[,id])])[,id]
   x <- x[elementMetadata(x)[,id] %in% primaryIDs]
   return(x)
 }
 #' Returns summits and summmit scores after optional fragment length prediction and read extension
 #'
-#' @param peakfile GRanges of region 
+#' @param peakfile GRanges of genomic intervals to summit. 
 #' @param reads Character vector of bamFile location or GAlignments object
 #' @param fragmentLength Predicted or calculated fragment length. Set as NULL for auto prediction of fragment length
 #' @param readlength Read length of alignments.
-#' @return Summits A GRanges object of summits and summmit scores.
+#' @return Summits A GRanges object of summits and summit scores.
 #' @export
 summitPipeline <- function(reads,peakfile,fragmentLength,readlength){
   message("Reading in peaks..",appendLF=FALSE)
@@ -157,7 +157,7 @@ return(cc_scores)
 
 getFragmentLength <- function(x,readLength){
   #peaks <- which(diff(sign(diff(x, na.pad = FALSE)), na.pad = FALSE) < 0)+1
-  MaxShift <- which.max(caTools::runmean(x[-seq(1,(2*readLength))],10))+2*readLength
+  MaxShift <- which.max(runMean(x[-seq(1,(2*readLength))],10))+2*readLength
   
 }
   
@@ -166,7 +166,7 @@ runFindSummit <- function(testRanges,reads,fragmentLength=NULL){
     reads <- readGAlignmentsFromBam(reads)
   }
   if(!is.null(fragmentLength)){
-    message("Extending reads to fragmentlength of ",fragmentLength,"..",appendLF=F)
+    message("Extending reads to fragmentlength of ",fragmentLength,"..",appendLF=FALSE)
     reads <- resize(as(reads,"GRanges"),fragmentLength,"start")
     message("done")
   }
@@ -185,7 +185,7 @@ getSummitScore <- function(reads,summits,fragmentLength=NULL,score="height"){
     reads <- readGAlignmentsFromBam(reads)
   }
   if(!is.null(fragmentLength)){
-    message("Extending reads to fragmentlength of ",fragmentLength,"..",appendLF=F)
+    message("Extending reads to fragmentlength of ",fragmentLength,"..",appendLF=FALSE)
     reads <- resize(as(reads,"GRanges"),fragmentLength,"start")
     message("done")
   }
@@ -203,7 +203,7 @@ runGetSummitScore <- function(reads,summits,ChrOfInterestshift,FragmentLength=15
 
   cov <- coverage(reads)
     if(score=="height"){
-      summitScores <- as.vector(unlist(cov[summits],use.names=F))
+      summitScores <- as.vector(unlist(cov[summits],use.names=FALSE))
     }
   elementMetadata(summits) <- cbind(as.data.frame(elementMetadata(summits)),summitScores)
     return(summits)
@@ -228,7 +228,10 @@ library(GenomicAlignments)
 #' Create GRangeslist from all combinations of GRanges
 #'
 #' @param testRanges A named list of GRanges or a named GRangesList 
-#' @return groupedGRanges A named GRangesList object. 
+#' @return groupedGRanges A named GRangesList object.
+#' @examples 
+#' data(ik_Example)
+#'  gts <- groupByOverlaps(ik_Example)
 #' @export
 groupByOverlaps <- function(testRanges){
   
@@ -253,15 +256,19 @@ groupByOverlaps <- function(testRanges){
   
   groupedGRangesList <- lapply(levels(allRegionsReduced$grangesGroups),
          function(x)allRegionsReduced[allRegionsReduced$grangesGroups %in% x])
-  names(groupedGRangesList) <- levels(allRegionsReduced)
+  names(groupedGRangesList) <- levels(allRegionsReduced$grangesGroups)
   return(groupedGRangesList)
 }
 
 #' Set strand by overlapping or nearest anchor GRanges
-#'
+#' @rdname orientBy
 #' @param testRanges The GRanges object to anchor. 
 #' @param anchorRanges A GRanges object by which to anchor strand orientation. 
-#' @return newRanges A GRanges object. 
+#' @return newRanges A GRanges object.
+#' @examples
+#' data(ik_Example)
+#' strand(ik_Example[[1]]) <- "+"
+#' anchoredGRanges <- orientBy(ik_Example[[2]],ik_Example[[1]]) 
 #' @export
 orientBy <- function(testRanges,anchorRanges){
   distIndex <- distanceToNearest(testRanges,anchorRanges)
@@ -271,6 +278,7 @@ orientBy <- function(testRanges,anchorRanges){
 #   testRanges$overlapsize <- widths
 #   anchorRangesFilt <- anchorRangesFilt[order(elementMetadata(distIndex)$distance,widths),]
   strand(testRanges) <- strand(anchorRangesFilt)
+  return(testRanges)
 }
 
 
@@ -285,7 +293,7 @@ GetGRanges <- function(LoadFile,AllChr=NULL,ChrOfInterest=NULL,simple=FALSE,sepr
     }
   }else{
     if(class(LoadFile) == "character"){
-      RangesTable <- read.delim(LoadFile,sep=sepr,header=TRUE,comment="#")
+      RangesTable <- read.delim(LoadFile,sep=sepr,header=TRUE,comment.char="#")
     }else if(class(LoadFile) == "matrix"){
       RangesTable <- as.data.frame(LoadFile)
     } else{
@@ -354,5 +362,105 @@ findCovMaxPos <- function(reads,bedRanges,ChrOfInterest,FragmentLength){
   }
   #return(meanMaxRanges)
   return(MaxRanges)
+}
+
+runMean = function(x, k, alg=c("C", "R", "fast", "exact"),
+                   endrule=c("mean", "NA", "trim", "keep", "constant", "func"),
+                   align = c("center", "left", "right"))
+{
+  alg     = match.arg(alg)
+  endrule = match.arg(endrule)
+  align   = match.arg(align)
+  dimx = dim(x) # Capture dimension of input array - to be used for formating y
+  x = as.vector(x)
+  n = length(x)
+  if (k<=1) return (x)
+  if (k >n) k = n
+  k2 = k%/%2
+    y = double(n)
+    k1 = k-k2-1
+    y = c( sum(x[1:k]), diff(x,k) ); # find the first sum and the differences from it
+    y = cumsum(y)/k                  # apply precomputed differences
+    y = c(rep(0,k1), y, rep(0,k2))   # make y the same length as x
+    if (endrule=="mean") endrule="func"
+  y = EndRule(x, y, k, dimx, endrule, align, mean, na.rm=TRUE)
+  return(y)
+}
+
+EndRule = function(x, y, k, dimx,
+                   endrule=c("NA", "trim", "keep", "constant", "func"),
+                   align = c("center", "left", "right"), Func, ...)
+{
+  # Function which postprocess results of running windows functions and cast
+  # them in to specified format. On input y is equivalent to
+  #   y = runFUNC(as.vector(x), k, endrule="func", align="center")
+  
+  # === Step 1: inspects inputs and unify format ===
+  align   = match.arg(align)
+  k = as.integer(k)
+  k2 = k%/%2
+  if (k2<1) k2 = 1
+  yIsVec = is.null(dimx) # original x was a vector -> returned y will be a vector
+  if (yIsVec) dimx=c(length(y),1) # x & y will become 2D arrays
+  dim(x) <- dimx
+  dim(y) <- dimx
+  n = nrow(x)
+  m = ncol(x)
+  if (k>n) k2 = (n-1)%/%2
+  k1 = k-k2-1
+  if (align=="center" && k==2) align='right'
+  
+  # === Step 2: Apply different endrules ===
+  if (endrule=="trim") {
+    y = y[(k1+1):(n-k2),] # change y dimensions
+  } else if (align=="center") {
+    idx1 = 1:k1
+    idx2 = (n-k2+1):n
+    # endrule calculation in R will be skipped for most common case when endrule
+    # is default and array was a vector not a matrix
+    if (endrule=="NA") {
+      y[idx1,] = NA
+      y[idx2,] = NA
+    } else if (endrule=="keep") {
+      y[idx1,] = x[idx1,]
+      y[idx2,] = x[idx2,]
+    } else if (endrule=="constant") {
+      y[idx1,] = y[k1+1+integer(m),]
+      y[idx2,] = y[n-k2+integer(m),]
+    } else if (endrule=="func" || !yIsVec) {
+      for (j in 1:m) {
+        for (i in idx1) y[i,j] = Func(x[1:(i+k2),j], ...)
+        for (i in idx2) y[i,j] = Func(x[(i-k1):n,j], ...)
+      }
+    }
+  } else if (align=="left") {
+    y[1:(n-k1),] = y[(k1+1):n,]
+    idx = (n-k+2):n
+    if (endrule=="NA") {
+      y[idx,] = NA
+    } else if (endrule=="keep") {
+      y[idx,] = x[idx,]
+    } else if (endrule=="constant") {
+      y[idx,] = y[n-k+integer(m)+1,]
+    } else {
+      for (j in 1:m) for (i in idx) y[i,j] = Func(x[i:n,j], ...)
+    }
+  } else if (align=="right") {
+    y[(k2+1):n,] = y[1:(n-k2),]
+    idx = 1:(k-1)
+    if (endrule=="NA") {
+      y[idx,] = NA
+    } else if (endrule=="keep") {
+      y[idx,] = x[idx,]
+    } else if (endrule=="constant") {
+      y[idx,] = y[k+integer(m),]
+    } else {
+      for (j in 1:m) for (i in idx) y[i,j] = Func(x[1:i,j], ...)
+    }
+  }
+  
+  # === Step 4: final casting and return results ===
+  if (yIsVec) y = as.vector(y);
+  return(y)
 }
 

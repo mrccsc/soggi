@@ -26,7 +26,7 @@ findconsensusRegions(testRanges, bamFiles = NULL, method = "majority",
 \item{NonPrimaryPeaks}{A list of parameters to deal with non primary peaks in consensus regions.}
 }
 \value{
-Consensus A GRanges object of consensus summits.
+Consensus A GRanges object of consensus regions with consensus summits.
 }
 \description{
 Plot coverage of points or regions.

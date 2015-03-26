@@ -3,7 +3,7 @@ Type: Package
 Title: Summarise Over Grouped Genomic Intervals
 Version: 1.0.1
 Date: 2014-06-01
-Author: Gopuraja Dharmalingam, Tom Carroll
+Author: Ziwei Liand, Gopuraja Dharmalingam, Tom Carroll
 Maintainer: Tom Carroll <tc.infomatics@gmail.com>
 Description: Functions to
     summarise and visualise coverage across points or variable sized regions
@@ -11,31 +11,27 @@ Description: Functions to
 biocViews: Sequencing, ChIPSeq
 License: GPL (>= 3)
 LazyLoad: yes
-Depends: 
+Depends:
     R (>= 3.0.0),BiocGenerics
-Imports: 
+Imports:
+    QuasR,
     IRanges,
     ggplot2,
-    QuasR,
     rtracklayer,
     GenomicAlignments,
     GenomicRanges,
-    XVector,
     Rsamtools,
     reshape2,
     Biostrings,
-    XML,
-    tractor.base,
-    stringr,
     preprocessCore,
     chipseq,
-    caTools,
-    ChIPQC,
-    methods
-Collate: 
+    methods,
+    BiocParallel
+Collate:
     'allClasses.r'
     'motifTools.R'
     'peakTransforms.r'
     'plots.R'
     'tracktables.R'
-Suggests: testthat
+Suggests:
+    testthat

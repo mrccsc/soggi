@@ -12,16 +12,16 @@ regionPlot(bamFile, testRanges, samplename = NULL, nOfWindows = 100,
   FragmentLength = 150, style = "point", distanceAround = 1500,
   distanceUp = 1500, distanceDown = 1500, distanceInRegionStart = 1500,
   distanceOutRegionStart = 1500, distanceInRegionEnd = 1500,
-  distanceOutRegionEnd = 1500, paired = F, normalize = "RPM",
-  plotBy = "coverage", removeDup = F, verbose = T, format = "bam",
-  seqlengths = NULL, forceFragment = NULL, method = "bin",
-  genome = NULL, cutoff = 80, downSample = NULL,
+  distanceOutRegionEnd = 1500, paired = FALSE, normalize = "RPM",
+  plotBy = "coverage", removeDup = FALSE, verbose = TRUE,
+  format = "bam", seqlengths = NULL, forceFragment = NULL,
+  method = "bin", genome = NULL, cutoff = 80, downSample = NULL,
   minFragmentLength = NULL, maxFragmentLength = NULL)
 }
 \arguments{
-\item{bamFile}{Character vector for location of BAM file.}
+\item{bamFile}{Character vector for location of BAM file or bigWig, an rleList or PWM matrix.}
 
-\item{testRanges}{GRanges object of regions to plot.}
+\item{testRanges}{GRanges object or character vector of BED file location of regions to plot.}
 
 \item{samplename}{Character vector of sample name. Default is NULL.}
 
@@ -29,7 +29,7 @@ regionPlot(bamFile, testRanges, samplename = NULL, nOfWindows = 100,
 
 \item{FragmentLength}{Integer vector Predicted or expected fragment length.}
 
-\item{style}{Point or region (see details)}
+\item{style}{"Point" for per base pair plot, "percentOfRegion" for normalised length and "region" for combined plot}
 
 \item{distanceAround}{Distance around centre of region to be used for plotting}
 
@@ -63,7 +63,7 @@ for plotting.}
 
 \item{verbose}{TRUE or FALSE}
 
-\item{format}{BAM or BigWig}
+\item{format}{character vector of "BAM", "BigWig", "RleList" or "PWM"}
 
 \item{seqlengths}{Chromosomes to be used. If missing will report all.}
 
@@ -74,7 +74,7 @@ The bin method divides a region of interest into equal sized bins of number spec
 Coverage or counts are then summarised within these windows.
 The spline method creates a spline with the number of spline points as specified in nOfWindows argument.}
 
-\item{downSample}{Down sample GRanges or bamFile to this proportion of orginal.}
+\item{downSample}{Down sample BAM reads to this proportion of orginal.}
 
 \item{genome}{BSGenome object to be used when using PWM input.}
 
@@ -91,6 +91,10 @@ ChIPprofile A ChIPprofile object.
 Manual for soggi and ChIPprofile object
 
 The soggi function is the constructor for ChIPprofile objects.
+}
+\examples{
+data(chipExampleBig)
+chipExampleBig
 }
 \references{
 See \url{http://bioinformatics.csc.mrc.ac.uk} for more details on soGGi workflows

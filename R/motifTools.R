@@ -1,4 +1,4 @@
-#' PWM hits as an RLElist
+#' PWM hits and motif scores as an RLElist
 #'
 #' Creates rlelist of pwm hits. 
 #' 
@@ -10,19 +10,33 @@
 #' 
 #' @author Thomas Carroll
 #'
-#' @param pwm A pwn matrix object.
+#' @param pwm A PWM matrix object.
 #' @param genome A BSgenome object
 #' @param min pwm score (as percentage of maximum score) cutoff
 #' @param removeRand Remove contigs with rand string
+#' @param chrsOfInterest Chromosomes to use
+#' @return  A RLElist of motif density per base pair to be used as input to main soggi function.
+#' @examples \dontrun{
+#' if(requireNamespace("BSgenome.Hsapiens.UCSC.hg19", quietly = TRUE)){
+#' testPWM <- matrix(c(rep(1,4),rep(0,4),rep(0,4),rep(0,4)),ncol=4,byrow=TRUE)
+#' rownames(testPWM) <- c("A","C","G","T")
+#' suppressWarnings(pwmCov <- pwmToCoverage(testPWM,
+#'      BSgenome.Hsapiens.UCSC.hg19::Hsapiens, min="90",removeRand = FALSE,
+#'      chrsOfInterest="chr20"))
+#' }
+#' }
 #' @export
-pwmToCoverage <- function(pwm,genome,min="70%",removeRand=FALSE){
+pwmToCoverage <- function(pwm,genome,min="70%",removeRand=FALSE,chrsOfInterest=NULL){
   
   allchrs <- seqnames(genome)
+  if(!is.null(allchrs)){
+    allchrs <- allchrs[allchrs %in% chrsOfInterest]
+  }
   if(removeRand){
     allchrs <- allchrs[!grepl("random",allchrs,ignore.case=TRUE)]
   }
   intergerList <- lapply(allchrs,function(x)pwmHitAsCoverage(pwm,genome,min,x))
-  myrle <- RleList(intergerList,compress=F)
+  myrle <- RleList(intergerList,compress=FALSE)
   names(myrle) <- allchrs
   myrle
 }  
@@ -45,8 +59,8 @@ pwmHitAsCoverage <- function(pwm,genome,min,chrofinterest){
 }
 
 pwmHitAsGRanges <- function(pwm,genome,min,chrofinterest){
-  posMotifs <- matchPWM(pwm,genome[[chrofinterest]],min.score=min,with.score=T)
-  negMotifs <- matchPWM(reverseComplement(pwm),genome[[chrofinterest]],min.score=min,with.score=T)
+  posMotifs <- matchPWM(pwm,genome[[chrofinterest]],min.score=min,with.score=TRUE)
+  negMotifs <- matchPWM(reverseComplement(pwm),genome[[chrofinterest]],min.score=min,with.score=TRUE)
   posMotifs <- GRanges(seqnames=rep(chrofinterest,length(posMotifs)),
                        ranges=ranges(posMotifs),
                        strand=rep("+",length(posMotifs))                      
@@ -62,7 +76,7 @@ pwmHitAsGRanges <- function(pwm,genome,min,chrofinterest){
 
 pwmToGranges <- function(pwm,genome,min,chrs=NULL){
   if(is.null(chrs)){
-    chrs <- seqnames(Mmusculus)
+    chrs <- seqnames(genome)
   }
   chrs <- unique(chrs)
   Res <- lapply(chrs,function(x)pwmHitAsGRanges(pwm,genome,min,x))
@@ -94,7 +108,7 @@ rleFromScoresInGRanges <- function(GRangesSet,scoreBy,chrs){
 motifCov <- function(genome,regions,pwm,chrOfInterest,atCentre=FALSE){
   reducedregions <- reduce(regions[seqnames(regions) %in% chrOfInterest])
   regionViews <- Views(genome[[chrOfInterest]],ranges(reducedregions))
-  trial <- matchPWM(pwm,regionViews,min.score = 0,with.score = T)
+  trial <- matchPWM(pwm,regionViews,min.score = 0,with.score = TRUE)
   if(atCentre==TRUE){
     theRanges <- resize(as(trial,"IRanges"),1,"center")
   }
@@ -111,23 +125,15 @@ motifCov <- function(genome,regions,pwm,chrOfInterest,atCentre=FALSE){
 
 #' Motif score as an RLElist
 #'
-#' Creates rlelist of pwm scores 
-#'
-#'
-#' @docType methods
 #' @name makeMotifScoreRle
-#' @rdname makeMotifScoreRle
+#' @rdname pwmToCoverage
 #' 
-#' @author Thomas Carroll
 #'
-#' @param pwm A pwn matrix object.
 #' @param regions GRanges object to include in pwm rlelist
-#' @param genome A BSgenome object
 #' @param extend bps to extend regions by
-#' @param removeRand Remove contigs with rand string
 #' @param strandScore Method for averaging strand. Options are max, mean, sum, bothstrands
 #' @param atCentre TRUE/FALSE. TRUE assigns score onto 1bp position at centre of motif.
-#' FALSE assigns every basepair the sum of scores of all overlapping motifs.  
+#' FALSE assigns every basepair the sum of scores of all overlapping motifs. 
 #' @export
 makeMotifScoreRle <- function(pwm,regions,genome,extend,removeRand=FALSE,strandScore="mean",atCentre=FALSE){
   regions <- GRanges(seqnames(regions),IRanges(start(regions)-extend,end(regions)+extend),strand=strand(regions),elementMetadata(regions))
@@ -175,8 +181,8 @@ makeMotifScoreRle <- function(pwm,regions,genome,extend,removeRand=FALSE,strandS
   #motifScoreRLEComplement <- lapply(allchrs,function(x)motifCov(genome,regions,reverseComplement(pwm),x))
   #myrle <- RleList(motifScoreRLE,compress=F)
   # myrleComplement <- RleList(motifScoreRLEComplement,compress=F)
-  revMotif <- RleList(revMotif,compress=F)
-  forMotif <- RleList(forMotif,compress=F)
+  revMotif <- RleList(revMotif,compress=FALSE)
+  forMotif <- RleList(forMotif,compress=FALSE)
   if(strandScore=="sum"){
     MotifScore <- revMotif+forMotif
     names(MotifScore) <- allchrs    
