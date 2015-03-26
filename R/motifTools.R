@@ -16,15 +16,10 @@
 #' @param removeRand Remove contigs with rand string
 #' @param chrsOfInterest Chromosomes to use
 #' @return  A RLElist of motif density per base pair to be used as input to main soggi function.
-#' @examples \dontrun{
-#' if(requireNamespace("BSgenome.Hsapiens.UCSC.hg19", quietly = TRUE)){
-#' testPWM <- matrix(c(rep(1,4),rep(0,4),rep(0,4),rep(0,4)),ncol=4,byrow=TRUE)
-#' rownames(testPWM) <- c("A","C","G","T")
-#' suppressWarnings(pwmCov <- pwmToCoverage(testPWM,
-#'      BSgenome.Hsapiens.UCSC.hg19::Hsapiens, min="90",removeRand = FALSE,
-#'      chrsOfInterest="chr20"))
-#' }
-#' }
+#' @examples 
+#' data(pwmCov)
+#' regionPlot(pwmCov,GRanges("chrM",IRanges(0,200)) ,format="rlelist")
+#' 
 #' @export
 pwmToCoverage <- function(pwm,genome,min="70%",removeRand=FALSE,chrsOfInterest=NULL){
   

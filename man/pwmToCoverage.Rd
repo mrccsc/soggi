@@ -40,15 +40,8 @@ Creates rlelist of pwm hits.
 Motif score as an RLElist
 }
 \examples{
-\dontrun{
-if(requireNamespace("BSgenome.Hsapiens.UCSC.hg19", quietly = TRUE)){
-testPWM <- matrix(c(rep(1,4),rep(0,4),rep(0,4),rep(0,4)),ncol=4,byrow=TRUE)
-rownames(testPWM) <- c("A","C","G","T")
-suppressWarnings(pwmCov <- pwmToCoverage(testPWM,
-     BSgenome.Hsapiens.UCSC.hg19::Hsapiens, min="90",removeRand = FALSE,
-     chrsOfInterest="chr20"))
-}
-}
+data(pwmCov)
+regionPlot(pwmCov,GRanges("chrM",IRanges(0,200)) ,format="rlelist")
 }
 \author{
 Thomas Carroll

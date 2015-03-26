@@ -1,5 +1,6 @@
 #' Plot coverage of points or regions.
-#'
+#' 
+#' @rdname findconsensusRegions
 #' @param testRanges Named character vector of region locations 
 #' @param bamFiles Named character vector of bamFile locations
 #' @param method Method to select reproducible summits to merge.
@@ -77,10 +78,9 @@ dropNonPrimary <- function(x,consensusRanges,id="elementMetadata.ID",score="summ
   return(x)
 }
 #' Returns summits and summmit scores after optional fragment length prediction and read extension
-#'
+#' @rdname findconsensusRegions
 #' @param peakfile GRanges of genomic intervals to summit. 
 #' @param reads Character vector of bamFile location or GAlignments object
-#' @param fragmentLength Predicted or calculated fragment length. Set as NULL for auto prediction of fragment length
 #' @param readlength Read length of alignments.
 #' @return Summits A GRanges object of summits and summit scores.
 #' @export

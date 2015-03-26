@@ -456,3 +456,18 @@ NULL
 #' @usage data(ik_Example)
 #' @return A list containing two GRanges objects
 NULL
+
+#' Example motif coverage
+#'
+#' This dataset contains an rlelist of motif coverage
+#'
+#' \itemize{
+#' \item pwmCov
+#' }
+#'
+#' @docType data
+#' @keywords datasets
+#' @name pwmCov
+#' @usage data(pwmCov)
+#' @return A rlelist of motif coverage
+NULL

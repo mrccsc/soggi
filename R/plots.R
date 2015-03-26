@@ -284,7 +284,7 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
   if(freeScale){
     P$facet$free$y <- TRUE 
   }
-  P <- P+facet+aes_string(colour=colourBy,linetype=lineBy)
+  P <- P+aes_string(colour=colourBy,linetype=lineBy)
   
 
   
