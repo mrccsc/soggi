@@ -92,7 +92,10 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
     if(is.null(seqlengths)){
       seqlengths(genomeCov) <- unlist(lapply(genomeCov,length))
     }else{
-      seqlengths(genomeCov)[match(names(seqlengths),names(genomeCov))] <- seqlengths
+      allchrs <- intersect(names(seqlengths), names(genomeCov))
+      if (length(allchrs)==0){ error("No overlapping chromosomes between coverage and supplied seqlengths") }
+      genomeCov <- genomeCov[allchrs] #subset to get only desired chrs
+      seqlengths(genomeCov)[allchrs] <- seqlengths[allchrs] #set seqlengths
     }
     lengths <- seqlengths(genomeCov)
     allchrs <- names(lengths)
@@ -121,7 +124,10 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
     if(is.null(seqlengths)){
       seqlengths(genomeCov) <- unlist(lapply(genomeCov,length))
     }else{
-      seqlengths(genomeCov)[match(names(seqlengths),names(genomeCov))] <- seqlengths
+      allchrs <- intersect(names(seqlengths), names(genomeCov))
+      if (length(allchrs)==0){ error("No overlapping chromosomes between coverage and supplied seqlengths") }
+      genomeCov <- genomeCov[allchrs] #subset to get only desired chrs
+      seqlengths(genomeCov)[allchrs] <- seqlengths[allchrs] #set seqlengths
     }
     lengths <- seqlengths(genomeCov)
     allchrs <- names(lengths)
