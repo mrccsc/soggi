@@ -92,7 +92,7 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
     if(is.null(seqlengths)){
       seqlengths(genomeCov) <- unlist(lapply(genomeCov,length))
     }else{
-      seqlengths(genomeCov)[match(names(lengths),names(genomeCov))] <- lengths
+      seqlengths(genomeCov)[match(names(seqlengths),names(genomeCov))] <- seqlengths
     }
     lengths <- seqlengths(genomeCov)
     allchrs <- names(lengths)
@@ -121,7 +121,7 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
     if(is.null(seqlengths)){
       seqlengths(genomeCov) <- unlist(lapply(genomeCov,length))
     }else{
-      seqlengths(genomeCov)[match(names(lengths),names(genomeCov))] <- lengths
+      seqlengths(genomeCov)[match(names(seqlengths),names(genomeCov))] <- seqlengths
     }
     lengths <- seqlengths(genomeCov)
     allchrs <- names(lengths)

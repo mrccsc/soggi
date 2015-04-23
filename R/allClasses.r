@@ -34,7 +34,8 @@
 #' @param removeDup Remove duplicates before calculating coverage.
 #' @param verbose TRUE or FALSE
 #' @param format character vector of "BAM", "BigWig", "RleList" or "PWM"
-#' @param seqlengths Chromosomes to be used. If missing will report all.
+#' @param seqlengths A named vector of seqlengths of chromosomes to be used, e.g. 
+#' from a BSgenome object. If missing will report all.
 #' @param forceFragment Centre fragment and force consistent fragment width.
 #' @param method Character vector of value "bp","bin" or "spline". 
 #' The bin method divides a region of interest into equal sized bins of number specified in nOfWindows.
