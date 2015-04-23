@@ -75,16 +75,16 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
     ## Alternatively windsoring (see method) of subsets then colmeans.
       
       if(!is.null(outliers)){
-        profileTempList <- lapply(gts,function(x)
+        profileTempList <- lapply(gts,function(x){
           mat <- subsetProfile(profileTemp,x,rowData(object),summariseBy)
           if(any(is.na(mat))){warning("NAs present in assays; removing them when creating average profile")}
           colMeans(winsorizeMatrix(mat,outliers,1-outliers, na.rm = TRUE), na.rm = TRUE)
-          )         
+          })
       }else{
         profileTempList <- lapply(gts,function(x){
-          mat <- subsetProfile(profileTemp,x,rowData(object),summariseBy))
+          mat <- subsetProfile(profileTemp,x,rowData(object),summariseBy)
           if(any(is.na(mat))){warning("NAs present in assays; removing them when creating average profile")}
-          colMeans(mat, na.rm = TRUE) }
+          colMeans(mat, na.rm = TRUE) })
       }
     
     ## Create melted data frame for ggplot and attach index
@@ -129,17 +129,17 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
           summariseBy <- "summariseCol"
           names(gts) <- unlist(gts)
           if(!is.null(outliers)){
-            profileTempList <- lapply(gts,function(x)
+            profileTempList <- lapply(gts,function(x){
               mat <- subsetProfile(profileTemp,x,rowData(object),summariseBy)
               if(any(is.na(mat))){warning("NAs present in assays; removing them when creating average profile")}
               colMeans(winsorizeMatrix(mat,outliers,1-outliers, na.rm = TRUE), na.rm = TRUE)
-            )         
+            })         
           }else{
             profileTempList <- lapply(gts,function(x){
-              mat <- subsetProfile(profileTemp,x,rowData(object),summariseBy))
+              mat <- subsetProfile(profileTemp,x,rowData(object),summariseBy)
               if(any(is.na(mat))){warning("NAs present in assays; removing them when creating average profile")}
               colMeans(mat, na.rm = TRUE) 
-            }
+            })
           }
       
     
