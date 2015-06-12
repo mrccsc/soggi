@@ -240,7 +240,7 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
   ##  Calculate fragment length from cross-coverage if not provided
   
     if(paired==FALSE){
-      total <- readGAlignmentsFromBam(bamFile,param=Param)
+      total <- readGAlignments(bamFile,param=Param)
       message("..Done.\nRead in ",length(total)," reads")
       
       if(is.null(FragmentLength)){
@@ -257,7 +257,7 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
   
     if(paired==TRUE){
       
-      gaPaired <- readGAlignmentsFromBam(bamFile, 
+      gaPaired <- readGAlignments(bamFile, 
                                          param=ScanBamParam(what=c("mpos"),
                                                             flag=scanBamFlag(isProperPair = TRUE,isFirstMateRead = TRUE)))      
       tempPos <- GRanges(seqnames(gaPaired[strand(gaPaired) == "+"]),
