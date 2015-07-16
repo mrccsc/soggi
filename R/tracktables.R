@@ -92,7 +92,10 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
     if(is.null(seqlengths)){
       seqlengths(genomeCov) <- unlist(lapply(genomeCov,length))
     }else{
-      seqlengths(genomeCov)[match(names(lengths),names(genomeCov))] <- lengths
+      allchrs <- intersect(names(seqlengths), names(genomeCov))
+      if (length(allchrs)==0){ error("No overlapping chromosomes between coverage and supplied seqlengths") }
+      genomeCov <- genomeCov[allchrs] #subset to get only desired chrs
+      seqlengths(genomeCov)[allchrs] <- seqlengths[allchrs] #set seqlengths
     }
     lengths <- seqlengths(genomeCov)
     allchrs <- names(lengths)
@@ -121,7 +124,10 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
     if(is.null(seqlengths)){
       seqlengths(genomeCov) <- unlist(lapply(genomeCov,length))
     }else{
-      seqlengths(genomeCov)[match(names(lengths),names(genomeCov))] <- lengths
+      allchrs <- intersect(names(seqlengths), names(genomeCov))
+      if (length(allchrs)==0){ error("No overlapping chromosomes between coverage and supplied seqlengths") }
+      genomeCov <- genomeCov[allchrs] #subset to get only desired chrs
+      seqlengths(genomeCov)[allchrs] <- seqlengths[allchrs] #set seqlengths
     }
     lengths <- seqlengths(genomeCov)
     allchrs <- names(lengths)
@@ -234,7 +240,7 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
   ##  Calculate fragment length from cross-coverage if not provided
   
     if(paired==FALSE){
-      total <- readGAlignmentsFromBam(bamFile,param=Param)
+      total <- readGAlignments(bamFile,param=Param)
       message("..Done.\nRead in ",length(total)," reads")
       
       if(is.null(FragmentLength)){
@@ -251,7 +257,7 @@ runRegionPlot <- function(bamFile,testRanges,samplename=NULL,nOfWindows=100,Frag
   
     if(paired==TRUE){
       
-      gaPaired <- readGAlignmentsFromBam(bamFile, 
+      gaPaired <- readGAlignments(bamFile, 
                                          param=ScanBamParam(what=c("mpos"),
                                                             flag=scanBamFlag(isProperPair = TRUE,isFirstMateRead = TRUE)))      
       tempPos <- GRanges(seqnames(gaPaired[strand(gaPaired) == "+"]),

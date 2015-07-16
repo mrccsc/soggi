@@ -75,11 +75,16 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
     ## Alternatively windsoring (see method) of subsets then colmeans.
       
       if(!is.null(outliers)){
-        profileTempList <- lapply(gts,function(x)
-          colMeans(winsorizeMatrix(subsetProfile(profileTemp,x,rowData(object),summariseBy),outliers,1-outliers))
-          )         
+        profileTempList <- lapply(gts,function(x){
+          mat <- subsetProfile(profileTemp,x,rowData(object),summariseBy)
+          if(any(is.na(mat))){warning("NAs present in assays; removing them when creating average profile")}
+          colMeans(winsorizeMatrix(mat,outliers,1-outliers, na.rm = TRUE), na.rm = TRUE)
+          })
       }else{
-        profileTempList <- lapply(gts,function(x)colMeans(subsetProfile(profileTemp,x,rowData(object),summariseBy))) 
+        profileTempList <- lapply(gts,function(x){
+          mat <- subsetProfile(profileTemp,x,rowData(object),summariseBy)
+          if(any(is.na(mat))){warning("NAs present in assays; removing them when creating average profile")}
+          colMeans(mat, na.rm = TRUE) })
       }
     
     ## Create melted data frame for ggplot and attach index
@@ -124,11 +129,17 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
           summariseBy <- "summariseCol"
           names(gts) <- unlist(gts)
           if(!is.null(outliers)){
-            profileTempList <- lapply(gts,function(x)
-              colMeans(winsorizeMatrix(subsetProfile(profileTemp,x,rowData(object),summariseBy),outliers,1-outliers))
-            )         
+            profileTempList <- lapply(gts,function(x){
+              mat <- subsetProfile(profileTemp,x,rowData(object),summariseBy)
+              if(any(is.na(mat))){warning("NAs present in assays; removing them when creating average profile")}
+              colMeans(winsorizeMatrix(mat,outliers,1-outliers, na.rm = TRUE), na.rm = TRUE)
+            })         
           }else{
-            profileTempList <- lapply(gts,function(x)colMeans(subsetProfile(profileTemp,x,rowData(object),summariseBy))) 
+            profileTempList <- lapply(gts,function(x){
+              mat <- subsetProfile(profileTemp,x,rowData(object),summariseBy)
+              if(any(is.na(mat))){warning("NAs present in assays; removing them when creating average profile")}
+              colMeans(mat, na.rm = TRUE) 
+            })
           }
       
     
@@ -164,11 +175,14 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
     ## windsorised colmeans of whole profile matrix
     
     if(!is.null(outliers)){
-      profileList <- lapply(c(assays(object)),function(x)
-        colMeans(winsorizeMatrix(x,outliers,1-outliers))
-      )         
-    }else{    
-      profileList <- lapply(c(assays(object)),colMeans)
+      profileList <- lapply(c(assays(object)),function(x) {
+        if(any(is.na(x))){warning("NAs present in assays; removing them when creating average profile")}
+        colMeans(winsorizeMatrix(x,outliers,1-outliers, na.rm = TRUE), na.rm = TRUE)
+      })         
+    }else{
+      profileList <- lapply(c(assays(object)),function(x) {
+        if(any(is.na(x))){warning("NAs present in assays; removing them when creating average profile")}
+           colMeans(x, na.rm = TRUE)})
     }
     
     ## Join multiple assays/samples
@@ -291,11 +305,11 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
   return(P)
 }
 
-winsorizeMatrix <- function(mat,limitlow,limithigh){
-  apply(mat,2,function(x)winsorizeVector(x,limitlow,limithigh))
+winsorizeMatrix <- function(mat,limitlow,limithigh, na.rm = FALSE){
+  apply(mat,2,function(x)winsorizeVector(x,limitlow,limithigh, na.rm = na.rm))
 }
-winsorizeVector <- function(vect,limitlow,limithigh){
-  qs <- quantile(vect,c(limitlow,limithigh))
+winsorizeVector <- function(vect,limitlow,limithigh, na.rm = FALSE){
+  qs <- quantile(vect,c(limitlow,limithigh), na.rm = na.rm)
   vect[vect < qs[1]] <- qs[1]  
   vect[vect > qs[2]] <- qs[2]  
   vect
