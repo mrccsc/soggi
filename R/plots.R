@@ -52,7 +52,7 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
 ## 
 ## gts may be named list of character vectors referring to rownames(object) or a granges
 ## When 
-  #app <- lapply(gsets,function(x){colMeans(assays(object)[[1]][rowData(object)$name %in% x,])})
+  #app <- lapply(gsets,function(x){colMeans(assays(object)[[1]][rowRanges(object)$name %in% x,])})
   nOfWindows <- object@params$nOfWindows
   
   ## When running with gts option
@@ -76,10 +76,10 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
       
       if(!is.null(outliers)){
         profileTempList <- lapply(gts,function(x)
-          colMeans(winsorizeMatrix(subsetProfile(profileTemp,x,rowData(object),summariseBy),outliers,1-outliers))
+          colMeans(winsorizeMatrix(subsetProfile(profileTemp,x,rowRanges(object),summariseBy),outliers,1-outliers))
           )         
       }else{
-        profileTempList <- lapply(gts,function(x)colMeans(subsetProfile(profileTemp,x,rowData(object),summariseBy))) 
+        profileTempList <- lapply(gts,function(x)colMeans(subsetProfile(profileTemp,x,rowRanges(object),summariseBy))) 
       }
     
     ## Create melted data frame for ggplot and attach index
@@ -94,14 +94,14 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
                       seq(1,(object@params$distanceInRegionEnd+object@params$distanceOutRegionEnd+1)))
       }
       if(object@params$style=="point"){
-        axisIndex=c(seq(1,(object@params$distanceAround+object@params$distanceAround+1)))
+        axisIndex=c(seq(1,(object@params$distanceUp+object@params$distanceDown+1)))
       }
       if(object@params$style=="percentOfRegion"){
         axisIndex=c(seq(1,((nOfWindows*((object@params$distanceAround)/100))*2)+nOfWindows))
       } 
     
     ## Add Sample name, group name and index to dataframe
-      profileFrame <-data.frame("xIndex"=axisIndex,Group=profileMatTemp[,1],Sample=basename(unlist(exptData(object)["names"]))[p],Score=profileMatTemp[,2])
+      profileFrame <-data.frame("xIndex"=axisIndex,Group=profileMatTemp[,1],Sample=basename(unlist(metadata(object)["names"]))[p],Score=profileMatTemp[,2])
       
       profileList[[p]] <- profileFrame
     }  
@@ -119,16 +119,16 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
             ## extract profile matrix
           profileTemp <- assays(object)[[p]]
             
-          mcols(rowData(object))$summariseCol <- apply(as.data.frame(mcols(rowData(object))[,summariseBy,drop=FALSE]) , 1 , paste , collapse = "-" )
-          gts <- as.list(unique(mcols(rowData(object))$summariseCol))
+          mcols(rowRanges(object))$summariseCol <- apply(as.data.frame(mcols(rowRanges(object))[,summariseBy,drop=FALSE]) , 1 , paste , collapse = "-" )
+          gts <- as.list(unique(mcols(rowRanges(object))$summariseCol))
           summariseBy <- "summariseCol"
           names(gts) <- unlist(gts)
           if(!is.null(outliers)){
             profileTempList <- lapply(gts,function(x)
-              colMeans(winsorizeMatrix(subsetProfile(profileTemp,x,rowData(object),summariseBy),outliers,1-outliers))
+              colMeans(winsorizeMatrix(subsetProfile(profileTemp,x,rowRanges(object),summariseBy),outliers,1-outliers))
             )         
           }else{
-            profileTempList <- lapply(gts,function(x)colMeans(subsetProfile(profileTemp,x,rowData(object),summariseBy))) 
+            profileTempList <- lapply(gts,function(x)colMeans(subsetProfile(profileTemp,x,rowRanges(object),summariseBy))) 
           }
       
     
@@ -142,14 +142,14 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
                     seq(1,(object@params$distanceInRegionEnd+object@params$distanceOutRegionEnd+1)))
     }
     if(object@params$style=="point"){
-      axisIndex=c(seq(1,(object@params$distanceAround+object@params$distanceAround+1)))
+      axisIndex=c(seq(1,(object@params$distanceUp+object@params$distanceDown+1)))
     }
     if(object@params$style=="percentOfRegion"){
       axisIndex=c(seq(1,((nOfWindows*((object@params$distanceAround)/100))*2)+nOfWindows))
     } 
     
     ## Add Sample name, group name and index to dataframe
-    profileFrame <-data.frame("xIndex"=axisIndex,Group=profileMatTemp[,1],Sample=basename(unlist(exptData(object)["names"]))[p],Score=profileMatTemp[,2])
+    profileFrame <-data.frame("xIndex"=axisIndex,Group=profileMatTemp[,1],Sample=basename(unlist(metadata(object)["names"]))[p],Score=profileMatTemp[,2])
     
     profileList[[p]] <- profileFrame
   }  
@@ -174,7 +174,7 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
     ## Join multiple assays/samples
     
     profileFrame <- do.call(cbind,profileList)
-    colnames(profileFrame) <- basename(unlist(exptData(object)["names"]))
+    colnames(profileFrame) <- basename(unlist(metadata(object)["names"]))
 
     ## Attach index for different styles of plots
     
@@ -185,7 +185,7 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
                     seq(1,(object@params$distanceInRegionEnd+object@params$distanceOutRegionEnd+1)))
     }
     if(object@params$style=="point"){
-      axisIndex=c(seq(1,(object@params$distanceAround+object@params$distanceAround+1)))
+      axisIndex=c(seq(1,(object@params$distanceUp+object@params$distanceDown+1)))
     }
     if(object@params$style=="percentOfRegion"){
       axisIndex=c(seq(1,((object@params$nOfWindows*((object@params$distanceAround)/100))*2)+object@params$nOfWindows))
@@ -194,7 +194,7 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
     meltedProfileFrame <- melt(profileFrame)
     colnames(meltedProfileFrame) <- c("xIndex","Sample","Score")
   }
-  #profileList <- lapply(c(assays(object)),function(y)lapply(gsets,function(x){colMeans(y[rowData(object)$name %in% x,])}))
+  #profileList <- lapply(c(assays(object)),function(y)lapply(gsets,function(x){colMeans(y[rowRanges(object)$name %in% x,])}))
   
   ## Create geom_path plot
   if(!is.null(gts) & !is.null(groupData)){
@@ -231,8 +231,8 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
       theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=12))
   }
   if(object@params$style=="point"){
-    P <- P + scale_x_continuous(breaks=c(1,object@params$distanceAround+1,object@params$distanceAround+1+object@params$distanceAround),
-                              labels=c(paste0("Centre-",object@params$distanceAround),"Centre",paste0("Centre+",object@params$distanceAround)))+
+    P <- P + scale_x_continuous(breaks=c(1,object@params$distanceUp+1,object@params$distanceUp+1+object@params$distanceDown),
+                              labels=c(paste0("Centre-",object@params$distanceUp),"Centre",paste0("Centre+",object@params$distanceDown)))+
       theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=12))
   }
   if(object@params$style=="percentOfRegion"){
@@ -248,13 +248,13 @@ plotRegion.ChIPprofile <- function(object,gts=NULL,sampleData=NULL,groupData=NUL
   }  
   if(object@params$style=="region" & plotregion =="start"){
     P <- P + scale_x_continuous(breaks=c(1,object@params$distanceOutRegionStart+1,object@params$distanceInRegionStart+1+object@params$distanceOutRegionStart),
-                              labels=c("Start-1500","Centre","Start+1500"),
+                              labels=c(paste0("Start-",object@params$distanceOutRegionStart),"Centre",paste0("Start-",object@params$distanceInRegionStart)),
                               limits=c(1,object@params$distanceInRegionStart+1+object@params$distanceOutRegionStart))+
       theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=12))    
   }
   if(object@params$style=="region" & plotregion =="end"){
     P <- P + scale_x_continuous(breaks=(object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+c(1,object@params$distanceInRegionEnd+1,object@params$distanceInRegionEnd+1+object@params$distanceOutRegionEnd),
-                              labels=c("End-1500","Centre","End+1500"),
+                              labels=c(paste0("Start-",object@params$distanceInRegionEnd),"Centre",paste0("Start-",object@params$distanceOutRegionEnd)),
                               limits=(object@params$distanceOutRegionStart+object@params$distanceInRegionStart+1)+(object@params$nOfWindows*100)+c(1,object@params$distanceInRegionEnd+1+object@params$distanceOutRegionEnd))+
                                 theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=12))    
   } 
